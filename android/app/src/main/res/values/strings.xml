@@ -1,0 +1,126 @@
+<resources>
+    <string name="app_name">Wallixa</string>
+    <string name="app_tagline">Wallpapers for Every Mood</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_live">Live</string>
+    <string name="nav_collections">Collections</string>
+    <string name="nav_favorites">Favorites</string>
+    <string name="nav_profile">Profile</string>
+    <string name="nav_wallpapers">Wallpapers</string>
+    <string name="nav_downloads">Downloads</string>
+
+    <!-- Sub-Nav & Shortcuts -->
+    <string name="subnav_explore">Explore</string>
+    <string name="subnav_live">Live</string>
+    <string name="subnav_categories">Categories</string>
+    <string name="subnav_old">Old</string>
+    <string name="badge_retro">RETRO</string>
+
+    <string name="shortcut_trending">Trending</string>
+    <string name="shortcut_new">New</string>
+    <string name="shortcut_popular">Popular</string>
+    <string name="shortcut_editors">Editor\'s</string>
+
+    <!-- Home Sections -->
+    <string name="section_wallpaper_of_the_day">Wallpaper of the Day</string>
+    <string name="section_todays_picks">Today\'s Picks</string>
+    <string name="section_categories">Categories</string>
+    <string name="section_trending">Trending Wallpapers</string>
+    <string name="section_popular_live">Live Wallpapers</string>
+    <string name="view_all">See All</string>
+    <string name="explore_all">Explore all</string>
+
+    <!-- Live Wallpaper Eco Banner -->
+    <string name="live_eco_mode">Eco Mode</string>
+    <string name="live_battery_smart_title">Battery-Smart:</string>
+    <string name="live_battery_smart_desc">Previews pause while scrolling to conserve charge</string>
+
+    <!-- Actions & Buttons -->
+    <string name="action_apply">Apply Now</string>
+    <string name="action_set_as_wallpaper">Set as Wallpaper</string>
+    <string name="action_set_live">Set Live Wallpaper</string>
+    <string name="action_download">Download</string>
+    <string name="action_download_4k">Download 4K</string>
+    <string name="action_downloading">Downloading…</string>
+    <string name="action_downloaded">Downloaded</string>
+    <string name="action_favorite">Favorite</string>
+    <string name="action_favorited">Saved to Favorites</string>
+    <string name="action_unfavorited">Removed from Favorites</string>
+    <string name="action_share">Share</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_retry">Retry</string>
+    <string name="action_clear">Clear</string>
+    <string name="action_details">Details</string>
+    <string name="action_info">Info</string>
+    <string name="preview_mode">Preview Mode</string>
+
+    <!-- Apply Bottom Sheet Choices -->
+    <string name="apply_dialog_title">Apply Wallpaper</string>
+    <string name="apply_home_screen">Home Screen</string>
+    <string name="apply_lock_screen">Lock Screen</string>
+    <string name="apply_both_screens">Both Screens</string>
+    <string name="apply_success">Wallpaper applied successfully</string>
+    <string name="apply_failed">Failed to apply wallpaper</string>
+    <string name="apply_live_instructions">Tap Set as Wallpaper to configure through Android\'s native Live Wallpaper manager.</string>
+
+    <!-- Search -->
+    <string name="search_hint">Search wallpapers, categories, tags…</string>
+    <string name="search_recent">Recent Searches</string>
+    <string name="search_trending">Trending Tags</string>
+    <string name="search_no_results">No wallpapers found for \"%1$s\"</string>
+    <string name="search_clear_history">Clear Search History</string>
+
+    <!-- Filters & Sorting -->
+    <string name="filter_all">All</string>
+    <string name="filter_static">Static</string>
+    <string name="filter_live">Live</string>
+    <string name="sort_newest">Newest</string>
+    <string name="sort_popular">Popular</string>
+    <string name="sort_downloads">Most Downloaded</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_appearance">Appearance</string>
+    <string name="settings_theme">Theme</string>
+    <string name="theme_system">System Default</string>
+    <string name="theme_light">Light Mode</string>
+    <string name="theme_dark">Dark Mode (OLED)</string>
+    
+    <string name="settings_downloads">Downloads &amp; Network</string>
+    <string name="pref_wifi_only">Download on Wi-Fi Only</string>
+    <string name="pref_wifi_only_desc">Avoid using mobile carrier data for original downloads</string>
+    
+    <string name="settings_battery_performance">Battery &amp; Performance</string>
+    <string name="pref_battery_saver">Live Wallpaper Battery Saver</string>
+    <string name="pref_battery_saver_desc">Pause animations when battery is below 20%</string>
+    
+    <string name="settings_storage">Storage &amp; Cache</string>
+    <string name="cache_size">Image &amp; Preview Cache</string>
+    <string name="action_clear_cache">Clear Image Cache</string>
+    <string name="cache_cleared">Cache cleared successfully</string>
+    <string name="downloads_size">Offline Wallpapers Storage</string>
+    <string name="action_clear_downloads">Delete All Downloads</string>
+    <string name="downloads_cleared">Downloaded files removed</string>
+
+    <string name="settings_legal">Legal &amp; Information</string>
+    <string name="settings_privacy_policy">Privacy Policy</string>
+    <string name="settings_terms">Terms of Service</string>
+    <string name="settings_about">About Wallixa</string>
+    <string name="app_version">Version 1.0.0 (Build 100)</string>
+
+    <!-- Live Wallpaper Service Metadata -->
+    <string name="live_wallpaper_engine_name">Wallixa Live Wallpaper Engine</string>
+    <string name="live_wallpaper_engine_description">Ultra-efficient Media3 native live video wallpaper engine with zero background rendering and battery protection.</string>
+    <string name="live_wallpaper_author">Wallixa Studios</string>
+    <string name="live_wallpaper_context_uri">https://wallixa.app</string>
+
+    <!-- Empty States & Errors -->
+    <string name="empty_favorites_title">No Favorites Yet</string>
+    <string name="empty_favorites_desc">Tap the heart icon on any wallpaper to curate your private aesthetic gallery.</string>
+    <string name="empty_downloads_title">No Offline Wallpapers</string>
+    <string name="empty_downloads_desc">Downloaded wallpapers will appear here for full offline browsing and quick application.</string>
+    <string name="error_network">Unable to connect. Check your internet connection.</string>
+    <string name="error_unknown">An unexpected error occurred. Please try again.</string>
+</resources>

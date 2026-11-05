@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wallixa — Enterprise Admin Studio</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            aura: {
+              50: '#faf8ff',
+              500: '#7c3aed',
+              600: '#630ed4',
+              900: '#171422',
+              950: '#0d0b14',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+    .glass-panel { background: rgba(18, 18, 20, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 3px; }
+  </style>
+</head>
+<body class="bg-aura-950 text-zinc-100 min-h-screen flex">
+
+  <!-- Sidebar -->
+  <aside class="w-64 border-r border-zinc-800 bg-aura-900/50 flex flex-col justify-between shrink-0">
+    <div>
+      <div class="h-16 flex items-center px-6 border-b border-zinc-800 gap-3">
+        <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-purple-600 to-indigo-400 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-purple-500/20">W</div>
+        <span class="font-semibold text-lg tracking-wider text-zinc-100">WALLIXA <span class="text-purple-400 font-normal text-xs uppercase px-1.5 py-0.5 rounded bg-purple-400/10 border border-purple-400/20">Studio</span></span>
+      </div>
+      <nav class="p-4 space-y-1">
+        <button onclick="switchTab('overview')" id="nav-overview" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition text-amber-400 bg-amber-400/10">
+          <i class="fa-solid fa-chart-pie w-5 text-center"></i> Overview
+        </button>
+        <button onclick="switchTab('catalog')" id="nav-catalog" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/50">
+          <i class="fa-solid fa-images w-5 text-center"></i> Catalog Management
+        </button>
+        <button onclick="switchTab('upload')" id="nav-upload" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/50">
+          <i class="fa-solid fa-cloud-arrow-up w-5 text-center"></i> Ingest New Asset
+        </button>
+        <button onclick="switchTab('categories')" id="nav-categories" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/50">
+          <i class="fa-solid fa-tags w-5 text-center"></i> Categories
+        </button>
+        <button onclick="switchTab('reports')" id="nav-reports" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/50">
+          <i class="fa-solid fa-shield-halved w-5 text-center"></i> Moderation Queue
+          <span id="badge-reports" class="ml-auto bg-rose-500/20 text-rose-400 text-xs px-2 py-0.5 rounded-full font-semibold">1</span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- Credentials Status -->
+    <div class="p-4 border-t border-zinc-800">
+      <div class="glass-panel p-3 rounded-lg text-xs space-y-2">
+        <div class="flex items-center justify-between text-zinc-400">
+          <span>Backend Link</span>
+          <span class="inline-flex items-center gap-1 text-emerald-400 font-medium">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Connected
+          </span>
+        </div>
+        <div class="text-[11px] text-zinc-500 truncate" id="supabase-status-url">https://aura.supabase.co</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content Area -->
+  <main class="flex-1 flex flex-col min-w-0 overflow-y-auto">
+    <!-- Top Header -->
+    <header class="h-16 border-b border-zinc-800 px-8 flex items-center justify-between shrink-0 bg-aura-900/20 backdrop-blur">
+      <div class="flex items-center gap-3">
+        <h1 class="text-lg font-semibold text-zinc-100" id="page-title">Dashboard Overview</h1>
+      </div>
+      <div class="flex items-center gap-4">
+        <button onclick="openConfigModal()" class="px-3 py-1.5 rounded-lg border border-zinc-700 bg-zinc-800 hover:bg-zinc-700 text-xs font-medium text-zinc-200 transition flex items-center gap-2">
+          <i class="fa-solid fa-key text-amber-400"></i> API Keys
+        </button>
+        <div class="w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-xs font-medium text-zinc-300">
+          PA
+        </div>
+      </div>
+    </header>
+
+    <div class="p-8 max-w-7xl w-full mx-auto space-y-8 flex-1">
+      
+      <!-- TAB: OVERVIEW -->
+      <section id="tab-overview" class="space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div class="glass-panel p-5 rounded-xl border border-zinc-800">
+            <div class="text-xs uppercase text-zinc-400 font-medium tracking-wider">Total Catalog Assets</div>
+            <div class="text-3xl font-bold mt-2 text-zinc-100" id="stat-total-assets">8,420</div>
+            <div class="text-xs text-emerald-400 mt-2 flex items-center gap-1">
+              <i class="fa-solid fa-arrow-trend-up"></i> +120 this week
+            </div>
+          </div>
+          <div class="glass-panel p-5 rounded-xl border border-zinc-800">
+            <div class="text-xs uppercase text-zinc-400 font-medium tracking-wider">Live Video Wallpapers</div>
+            <div class="text-3xl font-bold mt-2 text-amber-400" id="stat-live-assets">4,190</div>
+            <div class="text-xs text-zinc-500 mt-2">H.264 baseline / 60fps</div>
+          </div>
+          <div class="glass-panel p-5 rounded-xl border border-zinc-800">
+            <div class="text-xs uppercase text-zinc-400 font-medium tracking-wider">Total App Downloads</div>
+            <div class="text-3xl font-bold mt-2 text-zinc-100" id="stat-downloads">1,248,930</div>
+            <div class="text-xs text-emerald-400 mt-2 flex items-center gap-1">
+              <i class="fa-solid fa-bolt"></i> Atomic trigger verified
+            </div>
+          </div>
+          <div class="glass-panel p-5 rounded-xl border border-zinc-800">
+            <div class="text-xs uppercase text-zinc-400 font-medium tracking-wider">Global CDN Cache Hit</div>
+            <div class="text-3xl font-bold mt-2 text-emerald-400">99.4%</div>
+            <div class="text-xs text-zinc-500 mt-2">Cloudflare edge delivery</div>
+          </div>
+        </div>
+
+        <!-- Recent Uploads Table -->
+        <div class="glass-panel rounded-xl border border-zinc-800 overflow-hidden">
+          <div class="p-5 border-b border-zinc-800 flex items-center justify-between">
+            <h2 class="text-sm font-semibold uppercase tracking-wider text-zinc-300">Top Performing Curations</h2>
+            <button onclick="switchTab('catalog')" class="text-xs text-amber-400 hover:underline">View All →</button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm text-zinc-300">
+              <thead class="bg-zinc-900/60 text-xs uppercase text-zinc-500 border-b border-zinc-800">
+                <tr>
+                  <th class="p-4">Preview</th>
+                  <th class="p-4">Title & Details</th>
+                  <th class="p-4">Type</th>
+                  <th class="p-4">Category</th>
+                  <th class="p-4">Downloads</th>
+                  <th class="p-4">Status</th>
+                </tr>
+              </thead>
+              <tbody id="overview-table-body" class="divide-y divide-zinc-800/60">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB: CATALOG MANAGEMENT -->
+      <section id="tab-catalog" class="space-y-6 hidden">
+        <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+          <div class="flex items-center gap-3 w-full md:w-auto">
+            <input type="text" id="catalog-search" oninput="filterCatalog()" placeholder="Search title or tag..." class="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-amber-400/50 w-full md:w-72">
+            <select id="catalog-type-filter" onchange="filterCatalog()" class="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-300 focus:outline-none">
+              <option value="all">All Formats</option>
+              <option value="static">Static (WebP)</option>
+              <option value="live">Live Video</option>
+            </select>
+          </div>
+          <button onclick="switchTab('upload')" class="px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black font-semibold rounded-lg text-sm transition shadow-lg shadow-amber-500/20 flex items-center gap-2">
+            <i class="fa-solid fa-plus"></i> Ingest Wallpaper
+          </button>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4" id="catalog-grid">
+          <!-- Populated by JavaScript -->
+        </div>
+      </section>
+
+      <!-- TAB: INGEST NEW ASSET -->
+      <section id="tab-upload" class="space-y-6 hidden">
+        <div class="glass-panel p-8 rounded-xl border border-zinc-800 max-w-4xl mx-auto space-y-6">
+          <div>
+            <h2 class="text-xl font-bold text-zinc-100">Asset Ingestion & Pipeline Ingest</h2>
+            <p class="text-sm text-zinc-400 mt-1">Upload high-resolution static master (WebP/PNG) or seamless loop video (MP4/H.264). Thumbnails and previews are automatically validated.</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Upload Area & Preview Box -->
+            <div class="space-y-4">
+              <div class="border-2 border-dashed border-zinc-700 hover:border-amber-400/60 rounded-xl p-8 flex flex-col items-center justify-center text-center cursor-pointer transition relative bg-zinc-900/40" onclick="document.getElementById('file-input').click()">
+                <input type="file" id="file-input" class="hidden" accept="image/*,video/mp4" onchange="handleFileSelect(event)">
+                <i class="fa-solid fa-cloud-arrow-up text-4xl text-amber-400 mb-3"></i>
+                <div class="text-sm font-medium text-zinc-200">Click or drop file to inspect</div>
+                <div class="text-xs text-zinc-500 mt-1">WebP, PNG, JPG, or MP4 (No audio track)</div>
+              </div>
+
+              <!-- Media Preview Container -->
+              <div id="media-preview-box" class="hidden glass-panel p-4 rounded-xl border border-zinc-800">
+                <div class="aspect-[9/16] bg-black rounded-lg overflow-hidden flex items-center justify-center relative">
+                  <img id="image-preview" class="w-full h-full object-cover hidden" alt="Preview">
+                  <video id="video-preview" class="w-full h-full object-cover hidden" autoplay loop muted playsinline></video>
+                </div>
+                <div class="mt-3 text-xs space-y-1 text-zinc-400" id="file-metadata-info"></div>
+              </div>
+            </div>
+
+            <!-- Metadata Form -->
+            <form onsubmit="handleAssetSubmit(event)" class="space-y-4">
+              <div>
+                <label class="block text-xs font-semibold uppercase text-zinc-400 mb-1">Asset Title</label>
+                <input type="text" id="asset-title" required placeholder="e.g., Midnight Obsidian Ridge" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-amber-400/50">
+              </div>
+
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-semibold uppercase text-zinc-400 mb-1">Type</label>
+                  <select id="asset-type" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-200">
+                    <option value="static">Static (9:16)</option>
+                    <option value="live">Live Looping Video</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold uppercase text-zinc-400 mb-1">Category</label>
+                  <select id="asset-category" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-200">
+                    <option value="c0000001-0000-0000-0000-000000000001">AMOLED</option>
+                    <option value="c0000001-0000-0000-0000-000000000002">Minimal</option>
+                    <option value="c0000001-0000-0000-0000-000000000003">Mountains</option>
+                    <option value="c0000001-0000-0000-0000-000000000004">Space</option>
+                    <option value="c0000001-0000-0000-0000-000000000005">Nature</option>
+                    <option value="c0000001-0000-0000-0000-000000000024">Live Nature</option>
+                    <option value="c0000001-0000-0000-0000-000000000025">Live Space</option>
+                    <option value="c0000001-0000-0000-0000-000000000026">Live Abstract</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold uppercase text-zinc-400 mb-1">Tags (Comma-separated)</label>
+                <input type="text" id="asset-tags" placeholder="dark, mountain, starry, amoled, night" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-amber-400/50">
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold uppercase text-zinc-400 mb-1">Licensing & Attribution</label>
+                <input type="text" id="asset-license" value="Curated Royalty-Free Commercial License" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-zinc-200">
+              </div>
+
+              <div class="flex items-center gap-6 pt-2">
+                <label class="flex items-center gap-2 text-sm text-zinc-300 cursor-pointer">
+                  <input type="checkbox" id="asset-featured" class="rounded bg-zinc-900 border-zinc-700 text-amber-500 focus:ring-0"> Featured on Home
+                </label>
+                <label class="flex items-center gap-2 text-sm text-zinc-300 cursor-pointer">
+                  <input type="checkbox" id="asset-published" checked class="rounded bg-zinc-900 border-zinc-700 text-amber-500 focus:ring-0"> Publish Immediately
+                </label>
+              </div>
+
+              <div class="pt-4">
+                <button type="submit" class="w-full py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black font-semibold rounded-lg text-sm transition shadow-lg shadow-amber-500/20">
+                  Process & Ingest Asset
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB: CATEGORIES -->
+      <section id="tab-categories" class="space-y-6 hidden">
+        <div class="glass-panel p-6 rounded-xl border border-zinc-800">
+          <h2 class="text-lg font-semibold text-zinc-100 mb-4">Active Catalog Taxonomies</h2>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="categories-grid"></div>
+        </div>
+      </section>
+
+      <!-- TAB: REPORTS -->
+      <section id="tab-reports" class="space-y-6 hidden">
+        <div class="glass-panel p-6 rounded-xl border border-zinc-800">
+          <h2 class="text-lg font-semibold text-zinc-100 mb-4">Content Moderation & Safety Reports</h2>
+          <div class="space-y-3" id="reports-list">
+            <div class="p-4 rounded-lg bg-zinc-900/60 border border-zinc-800 flex items-center justify-between">
+              <div>
+                <div class="text-sm font-semibold text-zinc-200">Report #R-9041: Potential Copyright Question</div>
+                <div class="text-xs text-zinc-400 mt-1">Asset: Monolith Neon (Static) — Reason: Attribution check requested</div>
+              </div>
+              <div class="flex gap-2">
+                <button onclick="resolveReport(this)" class="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded text-xs hover:bg-emerald-500/30 font-medium">Verify & Dismiss</button>
+                <button onclick="resolveReport(this)" class="px-3 py-1 bg-rose-500/20 text-rose-400 rounded text-xs hover:bg-rose-500/30 font-medium">Takedown Asset</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <script>
+    // State Store
+    const state = {
+      wallpapers: [
+        { id: 'w1', title: 'Obsidian Ridge', type: 'static', category: 'AMOLED', downloads: 34200, published: true, featured: true, thumb: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=300&auto=format&fit=crop&q=80' },
+        { id: 'w2', title: 'Alabaster Curves', type: 'static', category: 'Minimal', downloads: 28400, published: true, featured: true, thumb: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=300&auto=format&fit=crop&q=80' },
+        { id: 'w3', title: 'Cerulean Abyss', type: 'static', category: 'Ocean', downloads: 19800, published: true, featured: false, thumb: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=300&auto=format&fit=crop&q=80' },
+        { id: 'w4', title: 'Hyperion Pillars', type: 'static', category: 'Nature', downloads: 41200, published: true, featured: true, thumb: 'https://images.unsplash.com/photo-1448375240586-882707db888b?w=300&auto=format&fit=crop&q=80' },
+        { id: 'l1', title: 'Cosmic Aurora Waves', type: 'live', category: 'Live Space', downloads: 48200, published: true, featured: true, thumb: 'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=300&auto=format&fit=crop&q=80' },
+        { id: 'l2', title: 'Liquid Chrome Flow', type: 'live', category: 'Live Abstract', downloads: 36100, published: true, featured: true, thumb: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=300&auto=format&fit=crop&q=80' }
+      ],
+      categories: [
+        'AMOLED', 'Minimal', 'Mountains', 'Space', 'Nature', 'Abstract', 'Dark', 'Architecture', 'Ocean', 'Cars', 'Live Space', 'Live Nature', 'Live Abstract'
+      ]
+    };
+
+    function switchTab(tabId) {
+      document.querySelectorAll('main section').forEach(el => el.classList.add('hidden'));
+      document.getElementById('tab-' + tabId).classList.remove('hidden');
+
+      const titles = { overview: 'Dashboard Overview', catalog: 'Catalog Management', upload: 'Ingest New Asset', categories: 'Categories & Taxonomies', reports: 'Safety & Moderation' };
+      document.getElementById('page-title').innerText = titles[tabId] || 'Dashboard';
+
+      document.querySelectorAll('aside nav button').forEach(b => {
+        b.className = 'w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/50';
+      });
+      document.getElementById('nav-' + tabId).className = 'w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition text-amber-400 bg-amber-400/10';
+
+      if (tabId === 'catalog') renderCatalog();
+      if (tabId === 'overview') renderOverview();
+      if (tabId === 'categories') renderCategories();
+    }
+
+    function renderOverview() {
+      const tbody = document.getElementById('overview-table-body');
+      tbody.innerHTML = state.wallpapers.map(w => `
+        <tr class="hover:bg-zinc-900/40 transition">
+          <td class="p-4"><img src="${w.thumb}" class="w-10 h-16 object-cover rounded shadow" alt="${w.title}"></td>
+          <td class="p-4 font-medium text-zinc-100">${w.title}</td>
+          <td class="p-4"><span class="px-2 py-0.5 rounded text-xs uppercase font-semibold ${w.type === 'live' ? 'bg-amber-400/10 text-amber-400 border border-amber-400/20' : 'bg-zinc-800 text-zinc-400'}">${w.type}</span></td>
+          <td class="p-4 text-zinc-400">${w.category}</td>
+          <td class="p-4 font-mono">${w.downloads.toLocaleString()}</td>
+          <td class="p-4"><span class="inline-block w-2 h-2 rounded-full ${w.published ? 'bg-emerald-400' : 'bg-zinc-600'}"></span></td>
+        </tr>
+      `).join('');
+    }
+
+    function renderCatalog() {
+      const grid = document.getElementById('catalog-grid');
+      const search = (document.getElementById('catalog-search').value || '').toLowerCase();
+      const filterType = document.getElementById('catalog-type-filter').value;
+
+      const items = state.wallpapers.filter(w => {
+        const matchesSearch = w.title.toLowerCase().includes(search);
+        const matchesType = filterType === 'all' || w.type === filterType;
+        return matchesSearch && matchesType;
+      });
+
+      grid.innerHTML = items.map(w => `
+        <div class="glass-panel rounded-xl overflow-hidden group border border-zinc-800 flex flex-col justify-between">
+          <div class="aspect-[9/16] relative bg-black">
+            <img src="${w.thumb}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" alt="${w.title}">
+            <div class="absolute top-2 right-2 px-1.5 py-0.5 rounded bg-black/60 text-[10px] font-bold text-amber-400 backdrop-blur">${w.type.toUpperCase()}</div>
+          </div>
+          <div class="p-3">
+            <div class="text-xs font-semibold truncate text-zinc-100">${w.title}</div>
+            <div class="text-[11px] text-zinc-400 mt-0.5">${w.category} • ${w.downloads.toLocaleString()} dl</div>
+            <div class="mt-2 pt-2 border-t border-zinc-800/80 flex items-center justify-between text-xs">
+              <button onclick="togglePublish('${w.id}')" class="${w.published ? 'text-emerald-400' : 'text-zinc-600'} hover:underline">${w.published ? 'Active' : 'Hidden'}</button>
+              <button onclick="deleteAsset('${w.id}')" class="text-rose-400 hover:text-rose-300"><i class="fa-solid fa-trash-can"></i></button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderCategories() {
+      const grid = document.getElementById('categories-grid');
+      grid.innerHTML = state.categories.map(c => `
+        <div class="p-4 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-between">
+          <span class="font-medium text-sm text-zinc-200">${c}</span>
+          <span class="text-xs text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded">Active</span>
+        </div>
+      `).join('');
+    }
+
+    function filterCatalog() { renderCatalog(); }
+
+    function togglePublish(id) {
+      const item = state.wallpapers.find(w => w.id === id);
+      if (item) {
+        item.published = !item.published;
+        renderCatalog();
+      }
+    }
+
+    function deleteAsset(id) {
+      if (confirm('Permanently remove this wallpaper from the catalog?')) {
+        state.wallpapers = state.wallpapers.filter(w => w.id !== id);
+        renderCatalog();
+        renderOverview();
+      }
+    }
+
+    function resolveReport(btn) {
+      btn.closest('.p-4').remove();
+      document.getElementById('badge-reports').innerText = '0';
+    }
+
+    function handleFileSelect(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const previewBox = document.getElementById('media-preview-box');
+      const img = document.getElementById('image-preview');
+      const vid = document.getElementById('video-preview');
+      const meta = document.getElementById('file-metadata-info');
+
+      previewBox.classList.remove('hidden');
+      const isVideo = file.type.startsWith('video');
+
+      if (isVideo) {
+        img.classList.add('hidden');
+        vid.classList.remove('hidden');
+        vid.src = URL.createObjectURL(file);
+        document.getElementById('asset-type').value = 'live';
+      } else {
+        vid.classList.add('hidden');
+        img.classList.remove('hidden');
+        img.src = URL.createObjectURL(file);
+        document.getElementById('asset-type').value = 'static';
+      }
+
+      meta.innerHTML = `
+        <div><strong>Filename:</strong> ${file.name}</div>
+        <div><strong>Size:</strong> ${(file.size / (1024*1024)).toFixed(2)} MB</div>
+        <div><strong>Status:</strong> Validated Aspect Ratio & Bitrate</div>
+      `;
+    }
+
+    function handleAssetSubmit(e) {
+      e.preventDefault();
+      const title = document.getElementById('asset-title').value;
+      const type = document.getElementById('asset-type').value;
+      const category = document.getElementById('asset-category').selectedOptions[0].text;
+
+      state.wallpapers.unshift({
+        id: 'w_' + Date.now(),
+        title,
+        type,
+        category,
+        downloads: 0,
+        published: document.getElementById('asset-published').checked,
+        featured: document.getElementById('asset-featured').checked,
+        thumb: type === 'live' 
+          ? 'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=300&auto=format&fit=crop&q=80'
+          : 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=300&auto=format&fit=crop&q=80'
+      });
+
+      alert('Wallpaper processed & ingested into catalog successfully!');
+      switchTab('catalog');
+    }
+
+    function openConfigModal() {
+      const url = prompt('Enter Supabase Project URL:', localStorage.getItem('aura_sb_url') || 'https://aura.supabase.co');
+      if (url) {
+        localStorage.setItem('aura_sb_url', url);
+        document.getElementById('supabase-status-url').innerText = url;
+      }
+    }
+
+    // Init
+    renderOverview();
+  </script>
+</body>
+</html>

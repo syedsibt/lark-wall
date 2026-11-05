@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Brand Luxury Accents -->
+    <color name="aura_gold">#D4AF37</color>
+    <color name="aura_gold_light">#E5C158</color>
+    <color name="aura_gold_dark">#B38F24</color>
+    
+    <!-- Dark Mode Theme Palette -->
+    <color name="aura_dark_bg">#09090B</color>
+    <color name="aura_dark_surface">#121215</color>
+    <color name="aura_dark_surface_variant">#1C1C21</color>
+    <color name="aura_dark_text_primary">#F4F4F5</color>
+    <color name="aura_dark_text_secondary">#A1A1AA</color>
+    <color name="aura_dark_border">#27272A</color>
+
+    <!-- Light Mode Theme Palette -->
+    <color name="aura_light_bg">#FBFBFD</color>
+    <color name="aura_light_surface">#FFFFFF</color>
+    <color name="aura_light_surface_variant">#F4F4F5</color>
+    <color name="aura_light_text_primary">#18181B</color>
+    <color name="aura_light_text_secondary">#71717A</color>
+    <color name="aura_light_border">#E4E4E7</color>
+
+    <!-- Status Colors -->
+    <color name="aura_success">#10B981</color>
+    <color name="aura_error">#EF4444</color>
+</resources>
