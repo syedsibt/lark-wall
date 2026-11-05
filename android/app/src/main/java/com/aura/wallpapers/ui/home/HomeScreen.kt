@@ -112,7 +112,7 @@ fun HomeScreen(
         } else {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(bottom = 90.dp)
+                contentPadding = PaddingValues(bottom = 20.dp)
             ) {
                 // 1. Horizontal Category Sub-Nav Chips (Explore, Live, Categories, Old Retro)
                 item {
@@ -432,7 +432,7 @@ private fun WallpaperOfTheDayHero(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.Bottom
             ) {
-                Column(modifier = Modifier.weight(1f)) {
+                Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             imageVector = Icons.Filled.AutoAwesome,

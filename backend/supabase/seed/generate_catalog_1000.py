@@ -318,9 +318,75 @@ CATEGORIES = [
         ],
         "title_words": ["Autumn Amber", "Winter Solstice", "Spring Awakening", "Midsummer Shore", "Frost Needle", "Maple Blaze", "Cherry Rain", "Harvest Moon", "Blizzard Peak", "Equinox Glade", "Summer Solace", "October Mist", "April Bloom", "Glacial Freeze", "Warm Breeze", "November Hearth", "Vernal Sun", "Yuletide Quiet", "First Snow", "Golden Foliage"]
     },
-    # Live Categories (4)
+    # Gen Z Trending Static Categories (5)
     {
         "index": 24,
+        "name": "Liquid Chrome",
+        "slug": "liquid-chrome",
+        "description": "Molten mercury fluids, debossed chrome stars, iridescent silver pools, and futuristic Y2K cyber aesthetics.",
+        "icon": "bubble_chart",
+        "is_live": False,
+        "images": [
+            "photo-1618005182384-a83a8bd57fbe", "photo-1550684848-fac1c5b4e853", "photo-1541701494587-cb58502866ab",
+            "photo-1604076913837-52ab5629fba9", "photo-1579546929518-9e396f3cc809", "photo-1509198397868-475647b2a1e5"
+        ],
+        "title_words": ["Molten Silver", "Mercury Flow", "Cyber Star", "Iridescent Liquid", "Chrome Heart", "Liquid Mirror", "Fluid Titanium", "Metallic Prism", "Platinum Wave", "Acid Cyber", "Chrome Sigil", "Molten Quartz", "Silver Horizon", "Mercury Drop", "Liquid Metal", "Cyber Core", "Distorted Chrome", "Chrome Angel", "Mercury Ripple", "Future Silver"]
+    },
+    {
+        "index": 25,
+        "name": "Threads Ambient",
+        "slug": "threads-ambient",
+        "description": "Soft-focus gradient washes, dreamy pastel bokeh, and minimal aesthetic noise popular on Threads for widget-clean setups.",
+        "icon": "filter_vintage",
+        "is_live": False,
+        "images": [
+            "photo-1579546929518-9e396f3cc809", "photo-1507525428034-b723cf961d3e", "photo-1490750967868-88aa4486c946",
+            "photo-1518709268805-4e9042af9f23", "photo-1534447677768-be436bb09401", "photo-1519681393784-d120267933ba"
+        ],
+        "title_words": ["Smoky Mauve", "Pastel Haze", "Twilight Sage", "Muted Lavender", "Dreamscape Blur", "Aura Wash", "Velvet Bokeh", "Soft Gradient", "Threads Neutral", "Unsharp Dusk", "Minimal Bloom", "Pastel Mist", "Cotton Dawn", "Quiet Grain", "Sage Whisper", "Mauve Glow", "Atmosphere", "Ethereal Blur", "Chroma Mist", "Serene Wash"]
+    },
+    {
+        "index": 26,
+        "name": "Cyberpunk OLED",
+        "slug": "cyberpunk-oled",
+        "description": "Deep OLED true blacks, toxic green glitch grids, neon magenta reflections, and rainy dystopian skylines.",
+        "icon": "developer_board",
+        "is_live": False,
+        "images": [
+            "photo-1518770660439-4636190af475", "photo-1514565131-fce0801e5785", "photo-1538481199705-c710c4e965fc",
+            "photo-1550745165-9bc0b252726f", "photo-1508739773434-c26b3d09e071", "photo-1451187580459-43490279c0fa"
+        ],
+        "title_words": ["Tokyo Rain 2077", "Neon Matrix", "Toxic Grid", "Glitch Sigil", "Cyber Katana", "Dystopian Alley", "Acid Neon", "OLED Synth", "Digital Rain", "Hologram Street", "Neo Shinjuku", "Cyberpunk Dusk", "Subway Glitch", "Neon Kanji", "OLED Circuit", "Cyber Phantom", "Violet Rain", "Hex Overdrive", "Dark Net", "Cybernetic Pulse"]
+    },
+    {
+        "index": 27,
+        "name": "Dark Academia",
+        "slug": "dark-academia",
+        "description": "Renaissance low-light oil paintings, antique shadowed libraries, marble sculptures, and romantic melancholia.",
+        "icon": "menu_book",
+        "is_live": False,
+        "images": [
+            "photo-1513694203232-719a280e022f", "photo-1486406146926-c627a92ad1ab", "photo-1449247709967-d4461a6a6103",
+            "photo-1600585154340-be6161a56a0c", "photo-1506744038136-46273834b3fb", "photo-1518709268805-4e9042af9f23"
+        ],
+        "title_words": ["Shadowed Marble", "Antique Library", "Midnight Oil", "Gothic Arch", "Renaissance Study", "Moody Louvre", "Dark Classical", "Sepia Sculpture", "Hellenic Dusk", "Gilded Tome", "Scholar Solitude", "Baroque Shadow", "Chamber of Echoes", "Old World Grain", "Crowned Bust", "Nocturne Art", "Raven Manuscript", "Vintage Parchment", "Dimmed Gallery", "Obsidian Wing"]
+    },
+    {
+        "index": 28,
+        "name": "Anime Lo-Fi",
+        "slug": "anime-lofi",
+        "description": "35mm film grain, rainy Tokyo convenience stores, midnight bus stops, and nostalgic purple twilight.",
+        "icon": "headphones",
+        "is_live": False,
+        "images": [
+            "photo-1514565131-fce0801e5785", "photo-1519501025264-65ba15a82390", "photo-1477959858617-67f30bc75b82",
+            "photo-1480714378408-67cf0d13bc1b", "photo-1506973035872-a4ec16b8e8d9", "photo-1534447677768-be436bb09401"
+        ],
+        "title_words": ["Midnight Konbini", "Rainy Shibuya Stop", "Purple Twilight Lo-Fi", "35mm Nostalgia", "Rooftop Rain", "Empty Subway Car", "Vending Machine Glow", "City After Hours", "Lo-Fi Beats Room", "Midnight Express", "Retro Anime Dusk", "Liminal Highway", "Pastel Alley", "Quiet Apartment", "Tokyo 1999", "Neon Crosswalk", "Sleepy Station", "Rain on Glass", "Night Vibe", "Distant City Lights"]
+    },
+    # Live Categories (6)
+    {
+        "index": 29,
         "name": "Live Nature",
         "slug": "live-nature",
         "description": "Subtle swaying foliage, cascading waterfalls, and rolling mist.",
@@ -336,7 +402,7 @@ CATEGORIES = [
         "title_words": ["Cascading Mist", "Swaying Pines", "Sunlit Brook", "Alpine Breeze", "Forest Rain", "Rolling Fog", "Whispering Canopy", "Canyon Waterfall", "Glacial Torrent", "Green Glade", "Bamboo Rustle", "Lakeside Ripple", "Meadow Drift", "River Current", "Wild Rapids", "Morning Dewdrop", "Autumn Leaf Fall", "Woodland Breeze", "Fern Sway", "Tranquil Spring"]
     },
     {
-        "index": 25,
+        "index": 30,
         "name": "Live Space",
         "slug": "live-space",
         "description": "Slowly orbiting planets, pulsating pulsars, and drifting stars.",
@@ -352,7 +418,7 @@ CATEGORIES = [
         "title_words": ["Aurora Waves", "Drifting Stardust", "Orbiting Saturn", "Pulsar Beacon", "Nebula Flare", "Cosmic Void Loop", "Galactic Core", "Solar Prominence", "Interstellar Drift", "Deep Space Flow", "Supernova Shockwave", "Lunar Eclipse", "Starfield Warp", "Astral Sweep", "Celestial Orbit", "Cosmic Rays", "Black Hole Vortex", "Meteor Stream", "Andromeda Spiral", "Starlight Lullaby"]
     },
     {
-        "index": 26,
+        "index": 31,
         "name": "Live Abstract",
         "slug": "live-abstract",
         "description": "Fluid liquid simulations, shifting chromatic ribbons, and particle swarms.",
@@ -368,7 +434,7 @@ CATEGORIES = [
         "title_words": ["Liquid Chrome Flow", "Chromatic Ribbon", "Mercury Roll", "Particle Swarm", "Fluid Spectrum", "Iridescent Shift", "Energy Pulse", "Vortex Flow", "Plasma Ribbon", "Quantum Wave", "Molten Glass", "Color Swirl", "Bioluminescent Fluid", "Magnetic Flux", "Resonance Wave", "Prism Drift", "Aura Luminescence", "Digital Smoke", "Psychedelic Ribbon", "Harmonic Pulse"]
     },
     {
-        "index": 27,
+        "index": 32,
         "name": "Live Motion",
         "slug": "live-motion",
         "description": "Kinetic typography, sleek cybernetic lines, and ambient light loops.",
@@ -382,6 +448,38 @@ CATEGORIES = [
             "https://assets.mixkit.co/videos/preview/mixkit-light-leaks-on-dark-background-41913-large.mp4"
         ],
         "title_words": ["Cyber Highway", "Neon Tunnel Warp", "Data Circuit Flow", "Light Streak Highway", "Pulse Grid", "Kinetic Beam", "Speed of Light", "Glitch Matrix", "Hyperdrive Warp", "Laser Sweep", "Soundwave Ring", "Photon Stream", "Infinity Corridor", "City Light Velocity", "Fiber Optic Rush", "Binary Stream", "Tunnel Vision", "Luminescent Tracks", "Electro Shockwave", "Synth Highway"]
+    },
+    {
+        "index": 33,
+        "name": "Live Liquid Chrome",
+        "slug": "live-chrome",
+        "description": "Seamless 60fps rippling molten chrome, undulating mercury waves, and cybernetic fluid simulations.",
+        "icon": "play_circle",
+        "is_live": True,
+        "images": ["photo-1618005182384-a83a8bd57fbe", "photo-1550684848-fac1c5b4e853", "photo-1541701494587-cb58502866ab"],
+        "videos": [
+            "https://assets.mixkit.co/videos/preview/mixkit-flowing-water-surface-3171-large.mp4",
+            "https://assets.mixkit.co/videos/preview/mixkit-ink-swirling-in-water-in-slow-motion-41908-large.mp4",
+            "https://assets.mixkit.co/videos/preview/mixkit-bubbles-moving-in-slow-motion-41885-large.mp4",
+            "https://assets.mixkit.co/videos/preview/mixkit-colored-smoke-flowing-on-black-background-41279-large.mp4"
+        ],
+        "title_words": ["Molten Chrome Ripple", "Liquid Mercury Loop", "Fluid Titanium 60FPS", "Iridescent Chrome Flow", "Cybernetic Silver Wave", "Molten Metal Pulse", "Reflective Mercury Wave", "Chrome Vortex 60FPS", "Silver Tide Loop", "Platinum Surge", "Liquid Steel 60FPS", "Mercury Cascade", "Chrome Current", "Liquid Mirror Loop", "Metallic Surge", "Chroma Ripple", "Molten Quartz Pulse", "Silver Pulse Loop", "Chrome Horizon 60FPS", "Fluid Obsidian"]
+    },
+    {
+        "index": 34,
+        "name": "Live Tokyo Lo-Fi & Cyber",
+        "slug": "live-lofi",
+        "description": "Seamless 60fps rainy Tokyo neon streets, cyberpunk raindrops on glass, and glowing night city mist.",
+        "icon": "play_circle",
+        "is_live": True,
+        "images": ["photo-1514565131-fce0801e5785", "photo-1519501025264-65ba15a82390", "photo-1477959858617-67f30bc75b82"],
+        "videos": [
+            "https://assets.mixkit.co/videos/preview/mixkit-traffic-at-night-in-a-city-4318-large.mp4",
+            "https://assets.mixkit.co/videos/preview/mixkit-neon-lights-tunnel-in-a-club-41716-large.mp4",
+            "https://assets.mixkit.co/videos/preview/mixkit-light-leaks-on-dark-background-41913-large.mp4",
+            "https://assets.mixkit.co/videos/preview/mixkit-glowing-aurora-borealis-in-norway-42967-large.mp4"
+        ],
+        "title_words": ["Tokyo Rain Window 60FPS", "Cyberpunk Neon Drops", "Midnight Street Reflections", "Glowing Rain Bokeh 60FPS", "Dystopian Rain Loop", "Shibuya Rain Drift", "Night Konbini Loop", "Subway Neon Pulse", "Akihabara Glow 60FPS", "Lo-Fi Dusk Loop", "Neon Alley Mist", "Tokyo Highrise Rain", "Rain on Window 60FPS", "Midnight City Drift", "Cyber Dusk Loop", "Neon Street Glow", "Rainy Shinjuku Loop", "Lo-Fi Rooftop Rain", "Cyber Rain 60FPS", "Tokyo Midnight Pulse"]
     }
 ]
 

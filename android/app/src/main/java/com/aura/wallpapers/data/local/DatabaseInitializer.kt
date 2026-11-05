@@ -25,38 +25,35 @@ class DatabaseInitializer @Inject constructor(
 ) {
     suspend fun populateIfNeeded() = withContext(ioDispatcher) {
         try {
-            if (categoryDao.getCategoryCount() == 0) {
-                runCatching {
-                    context.assets.open("initial_categories.json").use { stream ->
-                        val type = object : TypeToken<List<CategoryEntity>>() {}.type
-                        val categories: List<CategoryEntity> = gson.fromJson(InputStreamReader(stream), type)
-                        if (!categories.isNullOrEmpty()) {
-                            categoryDao.insertCategories(categories)
-                        }
+            val catCount = categoryDao.getCategoryCount()
+            runCatching {
+                context.assets.open("initial_categories.json").use { stream ->
+                    val type = object : TypeToken<List<CategoryEntity>>() {}.type
+                    val categories: List<CategoryEntity> = gson.fromJson(InputStreamReader(stream), type)
+                    if (!categories.isNullOrEmpty() && catCount < categories.size) {
+                        categoryDao.insertCategories(categories)
                     }
                 }
             }
 
-            if (wallpaperDao.getWallpaperCount() == 0) {
-                runCatching {
-                    context.assets.open("initial_wallpapers.json").use { stream ->
-                        val type = object : TypeToken<List<WallpaperEntity>>() {}.type
-                        val wallpapers: List<WallpaperEntity> = gson.fromJson(InputStreamReader(stream), type)
-                        if (!wallpapers.isNullOrEmpty()) {
-                            wallpaperDao.insertWallpapers(wallpapers)
-                        }
+            val wallCount = wallpaperDao.getWallpaperCount()
+            runCatching {
+                context.assets.open("initial_wallpapers.json").use { stream ->
+                    val type = object : TypeToken<List<WallpaperEntity>>() {}.type
+                    val wallpapers: List<WallpaperEntity> = gson.fromJson(InputStreamReader(stream), type)
+                    if (!wallpapers.isNullOrEmpty() && wallCount < wallpapers.size) {
+                        wallpaperDao.insertWallpapers(wallpapers)
                     }
                 }
             }
 
-            if (wallpaperDao.getLiveWallpaperCount() == 0) {
-                runCatching {
-                    context.assets.open("initial_live_wallpapers.json").use { stream ->
-                        val type = object : TypeToken<List<LiveWallpaperEntity>>() {}.type
-                        val liveWallpapers: List<LiveWallpaperEntity> = gson.fromJson(InputStreamReader(stream), type)
-                        if (!liveWallpapers.isNullOrEmpty()) {
-                            wallpaperDao.insertLiveWallpapers(liveWallpapers)
-                        }
+            val liveCount = wallpaperDao.getLiveWallpaperCount()
+            runCatching {
+                context.assets.open("initial_live_wallpapers.json").use { stream ->
+                    val type = object : TypeToken<List<LiveWallpaperEntity>>() {}.type
+                    val liveWallpapers: List<LiveWallpaperEntity> = gson.fromJson(InputStreamReader(stream), type)
+                    if (!liveWallpapers.isNullOrEmpty() && liveCount < liveWallpapers.size) {
+                        wallpaperDao.insertLiveWallpapers(liveWallpapers)
                     }
                 }
             }

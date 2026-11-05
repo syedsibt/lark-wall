@@ -1,14 +1,101 @@
 <?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Stylized Dynamic 'W' Wing Emblem from Wallixa Design -->
-    <path
-        android:fillColor="#7C3AED"
-        android:pathData="M30,30 L44,78 L54,52 L64,78 L78,30 L66,30 L58,58 L52,42 L46,58 L38,30 Z" />
-    <path
-        android:fillColor="#DDD6FE"
-        android:pathData="M54,20 L58,25 L54,30 L50,25 Z" />
+
+    <group
+        android:scaleX="0.165"
+        android:scaleY="0.165"
+        android:translateX="11.7"
+        android:translateY="11.7">
+
+        <!-- Dynamic Curved Wallpaper / Horizon Aura Lines -->
+        <path
+            android:strokeColor="#66A855F7"
+            android:strokeWidth="2"
+            android:pathData="M40,380 Q180,290 320,370 T472,320" />
+        <path
+            android:strokeColor="#5538BDF8"
+            android:strokeWidth="1.5"
+            android:pathData="M40,410 Q200,340 360,410 T472,370" />
+
+        <!-- Left wing / Dynamic Wing Arch -->
+        <path
+            android:pathData="M140,340 C130,250 180,160 260,110 C235,155 230,210 245,270 C220,285 180,320 140,340 Z">
+            <aapt:attr name="android:fillColor">
+                <gradient
+                    android:startX="130"
+                    android:startY="110"
+                    android:endX="260"
+                    android:endY="340"
+                    android:type="linear">
+                    <item android:offset="0.0" android:color="#FFA855F7" />
+                    <item android:offset="0.45" android:color="#FF7C3AED" />
+                    <item android:offset="1.0" android:color="#FF4F46E5" />
+                </gradient>
+            </aapt:attr>
+        </path>
+
+        <!-- Top Soaring Crest / Swift Feather Flight Element -->
+        <path
+            android:pathData="M260,110 C310,130 370,170 400,230 C355,220 305,225 265,255 C275,195 275,145 260,110 Z">
+            <aapt:attr name="android:fillColor">
+                <gradient
+                    android:startX="260"
+                    android:startY="255"
+                    android:endX="400"
+                    android:endY="110"
+                    android:type="linear">
+                    <item android:offset="0.0" android:color="#FFEC4899" />
+                    <item android:offset="0.5" android:color="#FFF43F5E" />
+                    <item android:offset="1.0" android:color="#FFFB923C" />
+                </gradient>
+            </aapt:attr>
+        </path>
+
+        <!-- Forward Motion Swoop / Energy Core -->
+        <path
+            android:pathData="M175,260 C220,235 280,235 345,285 C375,310 395,345 410,390 C365,375 310,355 265,320 C220,285 195,275 175,260 Z">
+            <aapt:attr name="android:fillColor">
+                <gradient
+                    android:startX="175"
+                    android:startY="235"
+                    android:endX="410"
+                    android:endY="390"
+                    android:type="linear">
+                    <item android:offset="0.0" android:color="#FF38BDF8" />
+                    <item android:offset="1.0" android:color="#FF818CF8" />
+                </gradient>
+            </aapt:attr>
+        </path>
+
+        <!-- Core Prism Light Particle & Stars -->
+        <path
+            android:fillColor="#FFFFFFFF"
+            android:pathData="M268,216m-6,0a6,6 0 1,1 12,0a6,6 0 1,1 -12,0" />
+
+        <!-- Sparkle Stars -->
+        <path
+            android:fillColor="#E6FBCFE8"
+            android:pathData="M380,130 Q380,145 395,145 Q380,145 380,160 Q380,145 365,145 Q380,145 380,130 Z" />
+        <path
+            android:fillColor="#CCBAE6FD"
+            android:pathData="M125,190 Q125,200 135,200 Q125,200 125,210 Q125,200 115,200 Q125,200 125,190 Z" />
+        <path
+            android:fillColor="#E6F472B6"
+            android:pathData="M395,275m-3.5,0a3.5,3.5 0 1,1 7,0a3.5,3.5 0 1,1 -7,0" />
+        <path
+            android:fillColor="#BFC084FC"
+            android:pathData="M150,370m-3,0a3,3 0 1,1 6,0a3,3 0 1,1 -6,0" />
+
+        <!-- Monogram Badge Frame -->
+        <path
+            android:strokeColor="#33FFFFFF"
+            android:strokeWidth="1.5"
+            android:fillColor="#1AFFFFFF"
+            android:pathData="M210,410 h92 a14,14 0 0 1 14,14 v0 a14,14 0 0 1 -14,14 h-92 a14,14 0 0 1 -14,-14 v0 a14,14 0 0 1 14,-14 Z" />
+    </group>
 </vector>

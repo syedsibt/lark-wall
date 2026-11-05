@@ -28,18 +28,23 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.MotionPhotosOn
+import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.PhoneAndroid
+import androidx.compose.material.icons.filled.PhotoCamera
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.filled.Wallpaper
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.Button
@@ -72,6 +77,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -90,6 +96,16 @@ import com.aura.wallpapers.ui.theme.WallixaPrimary
 import com.aura.wallpapers.ui.theme.WallixaPrimaryContainer
 import com.aura.wallpapers.ui.theme.WallixaSecondaryContainer
 import com.aura.wallpapers.ui.theme.WallixaTertiary
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+
+enum class DetailPreviewMode {
+    NORMAL,
+    LOCK_SCREEN,
+    HOME_SCREEN,
+    CLEAN
+}
 
 @OptIn(UnstableApi::class)
 @Composable
@@ -101,7 +117,7 @@ fun WallpaperDetailScreen(
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
 
-    var isPreviewCleanMode by remember { mutableStateOf(false) }
+    var previewMode by remember { mutableStateOf(DetailPreviewMode.NORMAL) }
     var isInfoCardVisible by remember { mutableStateOf(false) }
     var selectedTarget by remember { mutableStateOf(ApplyTarget.BOTH_SCREENS) }
 
@@ -117,14 +133,34 @@ fun WallpaperDetailScreen(
             .fillMaxSize()
             .background(Color.Black)
             .clickable {
-                // Tap canvas to toggle clean preview mode
-                isPreviewCleanMode = !isPreviewCleanMode
+                // Tap canvas to cycle through preview modes when previewing
+                if (previewMode != DetailPreviewMode.NORMAL) {
+                    previewMode = when (previewMode) {
+                        DetailPreviewMode.LOCK_SCREEN -> DetailPreviewMode.HOME_SCREEN
+                        DetailPreviewMode.HOME_SCREEN -> DetailPreviewMode.CLEAN
+                        DetailPreviewMode.CLEAN -> DetailPreviewMode.NORMAL
+                        DetailPreviewMode.NORMAL -> DetailPreviewMode.LOCK_SCREEN
+                    }
+                }
             }
     ) {
         // 1. Immersive Full-Bleed Media (Static image or Media3 live loop)
         if (uiState.isLive && uiState.liveWallpaper != null) {
             val live = uiState.liveWallpaper!!
-            val exoPlayer = remember {
+
+            // Fallback crisp thumbnail while video buffers
+            AsyncImage(
+                model = ImageRequest.Builder(context)
+                    .data(live.thumbnailUrl)
+                    .crossfade(true)
+                    .build(),
+                contentDescription = live.title,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
+
+            // Video player with explicit key on previewVideoUrl
+            val exoPlayer = remember(live.previewVideoUrl) {
                 ExoPlayer.Builder(context).build().apply {
                     repeatMode = Player.REPEAT_MODE_ALL
                     volume = 0f
@@ -135,7 +171,7 @@ fun WallpaperDetailScreen(
                 }
             }
 
-            DisposableEffect(Unit) {
+            DisposableEffect(exoPlayer) {
                 onDispose {
                     exoPlayer.stop()
                     exoPlayer.release()
@@ -172,9 +208,9 @@ fun WallpaperDetailScreen(
             )
         }
 
-        // Ambient Shadow Overlays for Crisp Action Legibility
+        // 2. Normal Ambient Shadow Overlays for Action Legibility
         AnimatedVisibility(
-            visible = !isPreviewCleanMode,
+            visible = previewMode == DetailPreviewMode.NORMAL,
             enter = fadeIn(),
             exit = fadeOut(),
             modifier = Modifier.fillMaxSize()
@@ -193,9 +229,9 @@ fun WallpaperDetailScreen(
             )
         }
 
-        // 2. Top Floating Frosted Bar (Back & Options)
+        // 3. Top Floating Frosted Bar (Back & Options in Normal Mode)
         AnimatedVisibility(
-            visible = !isPreviewCleanMode,
+            visible = previewMode == DetailPreviewMode.NORMAL,
             enter = fadeIn() + slideInVertically(),
             exit = fadeOut() + slideOutVertically(),
             modifier = Modifier
@@ -224,26 +260,26 @@ fun WallpaperDetailScreen(
                     )
                 }
 
-                // Center Live Mock Mode Indicator
+                // Interactive Preview Mode Launcher Button
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(9999.dp))
-                        .background(Color.White.copy(alpha = 0.2f))
-                        .clickable { isPreviewCleanMode = !isPreviewCleanMode }
-                        .padding(horizontal = 14.dp, vertical = 6.dp)
+                        .background(Color.White.copy(alpha = 0.25f))
+                        .clickable { previewMode = DetailPreviewMode.LOCK_SCREEN }
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
-                            imageVector = if (isPreviewCleanMode) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                            imageVector = Icons.Filled.Visibility,
                             contentDescription = null,
                             tint = WallixaAccentLavender,
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = stringResource(R.string.preview_mode),
+                            text = "Live Preview",
                             color = Color.White,
-                            fontSize = 11.sp,
+                            fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
                             letterSpacing = 0.5.sp
                         )
@@ -266,9 +302,9 @@ fun WallpaperDetailScreen(
             }
         }
 
-        // 3. Right Side Floating Micro-Action Rail
+        // 4. Right Side Floating Action Rail (Normal Mode)
         AnimatedVisibility(
-            visible = !isPreviewCleanMode,
+            visible = previewMode == DetailPreviewMode.NORMAL,
             enter = fadeIn(),
             exit = fadeOut(),
             modifier = Modifier
@@ -310,9 +346,9 @@ fun WallpaperDetailScreen(
             }
         }
 
-        // 4. Collapsible Artist & Details Card (Toggled via Info icon)
+        // 5. Collapsible Artist & Details Card
         AnimatedVisibility(
-            visible = isInfoCardVisible && !isPreviewCleanMode,
+            visible = isInfoCardVisible && previewMode == DetailPreviewMode.NORMAL,
             enter = fadeIn() + slideInVertically { it / 2 },
             exit = fadeOut() + slideOutVertically { it / 2 },
             modifier = Modifier
@@ -410,9 +446,9 @@ fun WallpaperDetailScreen(
             }
         }
 
-        // 5. Bottom Interactive Frosted Sheet Area
+        // 6. Bottom Interactive Sheet Area (Normal Mode)
         AnimatedVisibility(
-            visible = !isPreviewCleanMode,
+            visible = previewMode == DetailPreviewMode.NORMAL,
             enter = fadeIn() + slideInVertically(),
             exit = fadeOut() + slideOutVertically(),
             modifier = Modifier
@@ -443,7 +479,7 @@ fun WallpaperDetailScreen(
                         val resolution = uiState.wallpaper?.resolutionLabel ?: uiState.liveWallpaper?.resolutionLabel ?: "3840×2160"
                         val size = uiState.wallpaper?.formattedSize ?: uiState.liveWallpaper?.formattedSize ?: "4.2 MB"
                         Text(
-                            text = "4K Ultra HD • $resolution • $size • OLED",
+                            text = if (uiState.isLive) "Live 60 FPS • Seamless Loop • OLED Optimized" else "4K Ultra HD • $resolution • $size • OLED",
                             color = Color.White,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Medium
@@ -453,7 +489,7 @@ fun WallpaperDetailScreen(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Segmented Radio Screen Target Selector
+                // Segmented Target Selector for static wallpapers
                 if (!uiState.isLive) {
                     Row(
                         modifier = Modifier
@@ -531,6 +567,272 @@ fun WallpaperDetailScreen(
             }
         }
 
+        // =================================================================
+        // 7. INTERACTIVE DEVICE PREVIEW OVERLAYS (Lock Screen, Home Screen, Clean)
+        // =================================================================
+        if (previewMode != DetailPreviewMode.NORMAL) {
+            // Top Interactive Mode Switcher Pill
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .statusBarsPadding()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .align(Alignment.TopCenter)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .clip(RoundedCornerShape(9999.dp))
+                        .background(Color.Black.copy(alpha = 0.65f))
+                        .border(1.dp, Color.White.copy(alpha = 0.2f), RoundedCornerShape(9999.dp))
+                        .padding(4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    PreviewTabPill(
+                        label = "Lock Screen",
+                        isSelected = previewMode == DetailPreviewMode.LOCK_SCREEN,
+                        onClick = { previewMode = DetailPreviewMode.LOCK_SCREEN }
+                    )
+                    PreviewTabPill(
+                        label = "Home Screen",
+                        isSelected = previewMode == DetailPreviewMode.HOME_SCREEN,
+                        onClick = { previewMode = DetailPreviewMode.HOME_SCREEN }
+                    )
+                    PreviewTabPill(
+                        label = "Clean",
+                        isSelected = previewMode == DetailPreviewMode.CLEAN,
+                        onClick = { previewMode = DetailPreviewMode.CLEAN }
+                    )
+                    IconButton(
+                        onClick = { previewMode = DetailPreviewMode.NORMAL },
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Close,
+                            contentDescription = "Exit Preview",
+                            tint = Color.White,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+            }
+
+            // A. LOCK SCREEN SIMULATION
+            if (previewMode == DetailPreviewMode.LOCK_SCREEN) {
+                val timeString = remember { SimpleDateFormat("hh:mm", Locale.getDefault()).format(Date()) }
+                val dateString = remember { SimpleDateFormat("EEEE, MMMM d", Locale.getDefault()).format(Date()) }
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .statusBarsPadding()
+                        .navigationBarsPadding()
+                        .padding(horizontal = 24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.SpaceBetween
+                ) {
+                    // Top Space below status switcher
+                    Spacer(modifier = Modifier.height(60.dp))
+
+                    // Center Lock Screen Clock & Notification
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.padding(top = 20.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Lock,
+                            contentDescription = null,
+                            tint = Color.White.copy(alpha = 0.85f),
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(
+                            text = timeString,
+                            fontSize = 76.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                            letterSpacing = (-2).sp
+                        )
+                        Text(
+                            text = dateString,
+                            fontSize = 17.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color.White.copy(alpha = 0.9f)
+                        )
+
+                        Spacer(modifier = Modifier.height(28.dp))
+
+                        // Simulated Lock Screen Notification Card
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth(0.9f)
+                                .clip(RoundedCornerShape(18.dp))
+                                .background(Color.White.copy(alpha = 0.18f))
+                                .border(1.dp, Color.White.copy(alpha = 0.25f), RoundedCornerShape(18.dp))
+                                .padding(horizontal = 16.dp, vertical = 12.dp)
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(32.dp)
+                                        .clip(CircleShape)
+                                        .background(WallixaPrimary),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.MotionPhotosOn,
+                                        contentDescription = null,
+                                        tint = Color.White,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Column {
+                                    Text(
+                                        text = "Lark Wall • Live Engine",
+                                        color = Color.White,
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    Text(
+                                        text = "Seamless 60 FPS motion loop active",
+                                        color = Color.White.copy(alpha = 0.8f),
+                                        fontSize = 11.sp
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    // Bottom Lock Screen Hints & Quick Shortcuts
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.padding(bottom = 20.dp)
+                    ) {
+                        Text(
+                            text = "Swipe up to unlock",
+                            color = Color.White.copy(alpha = 0.7f),
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+
+                        Spacer(modifier = Modifier.height(20.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(52.dp)
+                                    .clip(CircleShape)
+                                    .background(Color.Black.copy(alpha = 0.45f))
+                                    .border(1.dp, Color.White.copy(alpha = 0.2f), CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Bolt,
+                                    contentDescription = "Flashlight",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
+
+                            Box(
+                                modifier = Modifier
+                                    .size(52.dp)
+                                    .clip(CircleShape)
+                                    .background(Color.Black.copy(alpha = 0.45f))
+                                    .border(1.dp, Color.White.copy(alpha = 0.2f), CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.PhotoCamera,
+                                    contentDescription = "Camera",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            // B. HOME SCREEN SIMULATION
+            if (previewMode == DetailPreviewMode.HOME_SCREEN) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .statusBarsPadding()
+                        .navigationBarsPadding()
+                        .padding(horizontal = 20.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Spacer(modifier = Modifier.height(60.dp))
+
+                    // Google-style Search Widget at top of Home Screen
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(9999.dp))
+                            .background(Color.White.copy(alpha = 0.85f))
+                            .padding(horizontal = 16.dp, vertical = 10.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = "G",
+                                    color = WallixaPrimary,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    fontSize = 18.sp
+                                )
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Text(
+                                    text = "Search…",
+                                    color = Color(0xFF555555),
+                                    fontSize = 14.sp
+                                )
+                            }
+                            Icon(
+                                imageVector = Icons.Filled.Search,
+                                contentDescription = null,
+                                tint = Color(0xFF555555),
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
+
+                    // Spacer
+                    Spacer(modifier = Modifier.weight(1f))
+
+                    // Bottom Dock with 4 Android App Icons
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(24.dp))
+                            .background(Color.White.copy(alpha = 0.2f))
+                            .padding(vertical = 14.dp, horizontal = 12.dp),
+                        horizontalArrangement = Arrangement.SpaceAround,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        MockAppIcon(name = "Phone", icon = Icons.Filled.Phone, color = Color(0xFF22C55E))
+                        MockAppIcon(name = "Messages", icon = Icons.Filled.Email, color = Color(0xFF3B82F6))
+                        MockAppIcon(name = "Lark Wall", icon = Icons.Filled.MotionPhotosOn, color = WallixaPrimary)
+                        MockAppIcon(name = "Camera", icon = Icons.Filled.PhotoCamera, color = Color(0xFFEF4444))
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+            }
+        }
+
         // Notification Snackbar Host
         SnackbarHost(
             hostState = snackbarHostState,
@@ -538,6 +840,61 @@ fun WallpaperDetailScreen(
                 .align(Alignment.BottomCenter)
                 .navigationBarsPadding()
                 .padding(bottom = 80.dp)
+        )
+    }
+}
+
+@Composable
+private fun PreviewTabPill(
+    label: String,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(9999.dp))
+            .background(if (isSelected) WallixaPrimary else Color.Transparent)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 12.dp, vertical = 6.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = label,
+            fontSize = 11.sp,
+            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+            color = Color.White
+        )
+    }
+}
+
+@Composable
+private fun MockAppIcon(
+    name: String,
+    icon: ImageVector,
+    color: Color
+) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .clip(RoundedCornerShape(14.dp))
+                .background(color),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = name,
+                tint = Color.White,
+                modifier = Modifier.size(24.dp)
+            )
+        }
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = name,
+            fontSize = 10.sp,
+            color = Color.White,
+            fontWeight = FontWeight.Medium,
+            textAlign = TextAlign.Center
         )
     }
 }
