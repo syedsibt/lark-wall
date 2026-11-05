@@ -112,7 +112,7 @@ fun SplashOnboardingScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "W",
+                        text = "L",
                         color = Color.White,
                         fontWeight = FontWeight.ExtraBold,
                         fontSize = 42.sp
@@ -123,7 +123,7 @@ fun SplashOnboardingScreen(
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = "Wallixa",
+                        text = "Lark Wall",
                         color = Color.White,
                         style = MaterialTheme.typography.displayLarge,
                         fontWeight = FontWeight.ExtraBold

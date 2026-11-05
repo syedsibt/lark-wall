@@ -343,7 +343,7 @@ fun WallpaperDetailScreen(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = "W",
+                                    text = "L",
                                     color = WallixaPrimary,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 18.sp
@@ -359,7 +359,7 @@ fun WallpaperDetailScreen(
                                     fontWeight = FontWeight.Bold
                                 )
                                 Text(
-                                    text = "Curated by Wallixa Studio",
+                                    text = "Curated by Lark Wall Studio",
                                     color = Color(0xFF4A4455),
                                     fontSize = 12.sp
                                 )

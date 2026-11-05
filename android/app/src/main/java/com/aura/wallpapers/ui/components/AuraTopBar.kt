@@ -35,7 +35,7 @@ import com.aura.wallpapers.ui.theme.WallixaVipGold
 
 @Composable
 fun AuraTopBar(
-    title: String = "Wallixa",
+    title: String = "Lark Wall",
     showBrandLogo: Boolean = true,
     onSearchClick: () -> Unit,
     onSettingsClick: () -> Unit,
@@ -59,7 +59,7 @@ fun AuraTopBar(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "W",
+                    text = "L",
                     color = Color.White,
                     fontWeight = FontWeight.ExtraBold,
                     fontSize = 18.sp

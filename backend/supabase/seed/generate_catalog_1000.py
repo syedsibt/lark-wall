@@ -513,7 +513,7 @@ def generate():
                 "isFeatured": is_featured,
                 "isPremium": is_premium,
                 "licenseType": "Standard Royalty-Free",
-                "authorName": "Wallixa Curators",
+                "authorName": "Lark Wall Curators",
                 "cachedAt": 1730764800000
             })
 
@@ -522,7 +522,7 @@ def generate():
                 f"('{wall_id}', '{title_escaped}', '{slug}', '{desc_escaped}', '{cat_id}', {tags_sql_array}, "
                 f"'{thumb_url}', '{prev_url}', '{orig_url}', "
                 f"2160, 3840, '9:16', {file_size}, 'image/webp', "
-                f"'{hash_str}', {downloads}, {favorites}, {views}, {'true' if is_featured else 'false'}, {'true' if is_premium else 'false'}, true, 'Wallixa Curators')"
+                f"'{hash_str}', {downloads}, {favorites}, {views}, {'true' if is_featured else 'false'}, {'true' if is_premium else 'false'}, true, 'Lark Wall Curators')"
             )
 
     sql_statements.append(",\n".join(static_sql_rows))
@@ -603,7 +603,7 @@ def generate():
                 "isFeatured": is_featured,
                 "isPremium": is_premium,
                 "licenseType": "Standard Royalty-Free",
-                "authorName": "Wallixa Motion Studio",
+                "authorName": "Lark Wall Motion Studio",
                 "cachedAt": 1730764800000
             })
 
@@ -611,7 +611,7 @@ def generate():
                 f"('{live_id}', '{title_escaped}', '{slug}', '{desc_escaped}', '{cat_id}', {tags_sql_array}, "
                 f"'{thumb_url}', '{video_url}', '{video_url}', "
                 f"1080, 1920, {duration}, 30.0, false, 'video/mp4', "
-                f"{file_size}, '{hash_str}', true, {downloads}, {favorites}, {views}, {'true' if is_featured else 'false'}, {'true' if is_premium else 'false'}, true, 'Wallixa Motion Studio')"
+                f"{file_size}, '{hash_str}', true, {downloads}, {favorites}, {views}, {'true' if is_featured else 'false'}, {'true' if is_premium else 'false'}, true, 'Lark Wall Motion Studio')"
             )
 
     sql_statements.append(",\n".join(live_sql_rows))

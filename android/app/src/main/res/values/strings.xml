@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Wallixa</string>
+    <string name="app_name">Lark Wall</string>
     <string name="app_tagline">Wallpapers for Every Mood</string>
 
     <!-- Navigation -->
@@ -107,14 +107,14 @@
     <string name="settings_legal">Legal &amp; Information</string>
     <string name="settings_privacy_policy">Privacy Policy</string>
     <string name="settings_terms">Terms of Service</string>
-    <string name="settings_about">About Wallixa</string>
+    <string name="settings_about">About Lark Wall</string>
     <string name="app_version">Version 1.0.0 (Build 100)</string>
 
     <!-- Live Wallpaper Service Metadata -->
-    <string name="live_wallpaper_engine_name">Wallixa Live Wallpaper Engine</string>
+    <string name="live_wallpaper_engine_name">Lark Wall Live Wallpaper Engine</string>
     <string name="live_wallpaper_engine_description">Ultra-efficient Media3 native live video wallpaper engine with zero background rendering and battery protection.</string>
-    <string name="live_wallpaper_author">Wallixa Studios</string>
-    <string name="live_wallpaper_context_uri">https://wallixa.app</string>
+    <string name="live_wallpaper_author">Lark Wall Studios</string>
+    <string name="live_wallpaper_context_uri">https://github.com/syedsibt/lark-wall</string>
 
     <!-- Empty States & Errors -->
     <string name="empty_favorites_title">No Favorites Yet</string>

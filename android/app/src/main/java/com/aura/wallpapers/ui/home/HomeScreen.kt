@@ -92,9 +92,9 @@ fun HomeScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        // Wallixa Top Header
+        // Top Header
         AuraTopBar(
-            title = "Wallixa",
+            title = "Lark Wall",
             showBrandLogo = true,
             onSearchClick = onNavigateToSearch,
             onSettingsClick = onNavigateToSettings
@@ -457,7 +457,7 @@ private fun WallpaperOfTheDayHero(
                         overflow = TextOverflow.Ellipsis
                     )
                     Text(
-                        text = "Curated by Wallixa Studio",
+                        text = "Curated by Lark Wall Studio",
                         color = Color.White.copy(alpha = 0.75f),
                         fontSize = 12.sp
                     )
