@@ -13,6 +13,9 @@ interface WallpaperDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertWallpapers(wallpapers: List<WallpaperEntity>)
 
+    @Query("SELECT COUNT(*) FROM wallpapers")
+    suspend fun getWallpaperCount(): Int
+
     @Query("SELECT * FROM wallpapers ORDER BY downloadCount DESC LIMIT :limit OFFSET :offset")
     fun getPopularWallpapers(limit: Int, offset: Int): Flow<List<WallpaperEntity>>
 
@@ -32,6 +35,9 @@ interface WallpaperDao {
     fun searchWallpapers(query: String): Flow<List<WallpaperEntity>>
 
     // Live Wallpapers
+    @Query("SELECT COUNT(*) FROM live_wallpapers")
+    suspend fun getLiveWallpaperCount(): Int
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertLiveWallpapers(liveWallpapers: List<LiveWallpaperEntity>)
 

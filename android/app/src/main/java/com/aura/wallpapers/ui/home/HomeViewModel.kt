@@ -2,6 +2,7 @@ package com.aura.wallpapers.ui.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.aura.wallpapers.data.local.DatabaseInitializer
 import com.aura.wallpapers.domain.model.Wallpaper
 import com.aura.wallpapers.domain.usecase.GetCategoriesUseCase
 import com.aura.wallpapers.domain.usecase.GetLiveWallpapersUseCase
@@ -20,6 +21,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
+    private val databaseInitializer: DatabaseInitializer,
     private val getWallpapersUseCase: GetWallpapersUseCase,
     private val getLiveWallpapersUseCase: GetLiveWallpapersUseCase,
     private val getCategoriesUseCase: GetCategoriesUseCase,
@@ -37,7 +39,10 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
 
-            // Trigger background refresh of categories if needed
+            // Ensure offline pre-populated 1000+ catalog is initialized
+            databaseInitializer.populateIfNeeded()
+
+            // Trigger background refresh of categories if remote API available
             runCatching { getCategoriesUseCase.refresh() }
 
             combine(

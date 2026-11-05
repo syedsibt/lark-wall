@@ -12,6 +12,9 @@ interface CategoryDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCategories(categories: List<CategoryEntity>)
 
+    @Query("SELECT COUNT(*) FROM categories")
+    suspend fun getCategoryCount(): Int
+
     @Query("SELECT * FROM categories ORDER BY displayOrder ASC")
     fun getAllCategories(): Flow<List<CategoryEntity>>
 

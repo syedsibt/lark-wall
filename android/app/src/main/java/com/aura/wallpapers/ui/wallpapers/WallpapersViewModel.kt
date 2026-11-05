@@ -2,6 +2,7 @@ package com.aura.wallpapers.ui.wallpapers
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.aura.wallpapers.data.local.DatabaseInitializer
 import com.aura.wallpapers.domain.model.Wallpaper
 import com.aura.wallpapers.domain.usecase.GetCategoriesUseCase
 import com.aura.wallpapers.domain.usecase.GetWallpapersUseCase
@@ -18,6 +19,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class WallpapersViewModel @Inject constructor(
+    private val databaseInitializer: DatabaseInitializer,
     private val getWallpapersUseCase: GetWallpapersUseCase,
     private val getCategoriesUseCase: GetCategoriesUseCase,
     private val toggleFavoriteUseCase: ToggleFavoriteUseCase
@@ -27,8 +29,11 @@ class WallpapersViewModel @Inject constructor(
     val uiState: StateFlow<WallpapersUiState> = _uiState.asStateFlow()
 
     init {
-        loadCategories()
-        loadWallpapers()
+        viewModelScope.launch {
+            databaseInitializer.populateIfNeeded()
+            loadCategories()
+            loadWallpapers()
+        }
     }
 
     private fun loadCategories() {

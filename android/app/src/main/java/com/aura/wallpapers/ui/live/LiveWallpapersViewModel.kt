@@ -2,6 +2,7 @@ package com.aura.wallpapers.ui.live
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.aura.wallpapers.data.local.DatabaseInitializer
 import com.aura.wallpapers.domain.model.Category
 import com.aura.wallpapers.domain.model.LiveWallpaper
 import com.aura.wallpapers.domain.usecase.GetCategoriesUseCase
@@ -26,6 +27,7 @@ data class LiveUiState(
 
 @HiltViewModel
 class LiveWallpapersViewModel @Inject constructor(
+    private val databaseInitializer: DatabaseInitializer,
     private val getLiveWallpapersUseCase: GetLiveWallpapersUseCase,
     private val getCategoriesUseCase: GetCategoriesUseCase,
     private val toggleFavoriteUseCase: ToggleFavoriteUseCase
@@ -35,8 +37,11 @@ class LiveWallpapersViewModel @Inject constructor(
     val uiState: StateFlow<LiveUiState> = _uiState.asStateFlow()
 
     init {
-        loadLiveCategories()
-        loadLiveWallpapers()
+        viewModelScope.launch {
+            databaseInitializer.populateIfNeeded()
+            loadLiveCategories()
+            loadLiveWallpapers()
+        }
     }
 
     private fun loadLiveCategories() {
