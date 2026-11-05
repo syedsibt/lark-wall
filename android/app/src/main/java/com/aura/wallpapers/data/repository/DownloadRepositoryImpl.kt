@@ -58,7 +58,7 @@ class DownloadRepositoryImpl @Inject constructor(
         downloadUrl: String,
         thumbnailUrl: String,
         fileSizeBytes: Long
-    ) = withContext(ioDispatcher) {
+    ): Unit = withContext(ioDispatcher) {
         val downloadId = UUID.randomUUID().toString()
         val extension = if (isLive) "mp4" else "webp"
         val fileName = "${title.lowercase().replace(" ", "_")}_${assetId.take(8)}.$extension"
@@ -97,18 +97,20 @@ class DownloadRepositoryImpl @Inject constructor(
             .build()
 
         WorkManager.getInstance(context).enqueue(request)
+        Unit
     }
 
-    override suspend fun deleteDownload(id: String) = withContext(ioDispatcher) {
+    override suspend fun deleteDownload(id: String): Unit = withContext(ioDispatcher) {
         val download = downloadDao.getDownloadById(id)
         if (download?.localFilePath != null) {
             val file = File(download.localFilePath)
             if (file.exists()) file.delete()
         }
         downloadDao.deleteDownload(id)
+        Unit
     }
 
-    override suspend fun clearAllDownloads() = withContext(ioDispatcher) {
+    override suspend fun clearAllDownloads(): Unit = withContext(ioDispatcher) {
         val downloads = downloadDao.getCompletedDownloads().first()
         for (item in downloads) {
             if (item.localFilePath != null) {
@@ -117,5 +119,6 @@ class DownloadRepositoryImpl @Inject constructor(
             }
         }
         downloadDao.clearAllDownloads()
+        Unit
     }
 }

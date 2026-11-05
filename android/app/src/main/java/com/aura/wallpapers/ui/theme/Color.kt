@@ -21,6 +21,7 @@ val WallixaOnTertiaryContainer = Color(0xFFEDE1FF)
 
 // Gold VIP Accent
 val WallixaVipGold = Color(0xFFEAB308)
+val AuraGold = WallixaVipGold
 
 // Light Theme Surface Palette (Lavender-infused airy paper)
 val WallixaSurface = Color(0xFFFAF8FF)

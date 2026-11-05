@@ -21,7 +21,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.FlashOn
-import androidx.compose.material.icons.filled.HighDensity
 import androidx.compose.material.icons.filled.MotionPhotosOn
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Verified
@@ -180,7 +179,7 @@ fun SplashOnboardingScreen(
                 OnboardingFeatureItem(
                     title = "HD & 4K Wallpapers",
                     subtitle = "Pixel-perfect retina visuals",
-                    icon = Icons.Filled.HighDensity,
+                    icon = Icons.Filled.AutoAwesome,
                     badgeIcon = Icons.Filled.Verified
                 )
                 Spacer(modifier = Modifier.height(10.dp))
