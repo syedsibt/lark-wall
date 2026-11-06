@@ -79,8 +79,10 @@ class AuraLiveWallpaperService : WallpaperService() {
 
         override fun onSurfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
             super.onSurfaceChanged(holder, format, width, height)
-            currentHolder = holder
-            exoPlayer?.setVideoSurfaceHolder(holder)
+            if (currentHolder != holder) {
+                currentHolder = holder
+                exoPlayer?.setVideoSurfaceHolder(holder)
+            }
         }
 
         override fun onSurfaceDestroyed(holder: SurfaceHolder) {

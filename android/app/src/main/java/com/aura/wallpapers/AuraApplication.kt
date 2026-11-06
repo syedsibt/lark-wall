@@ -31,11 +31,11 @@ class AuraApplication : Application(), Configuration.Provider, ImageLoaderFactor
     override fun newImageLoader(): ImageLoader {
         return ImageLoader.Builder(this)
             .okHttpClient(okHttpClient)
-            .bitmapConfig(Bitmap.Config.ARGB_8888) // 32-bit True Color (10X Image Fidelity, Zero Banding)
             .allowRgb565(false) // Never degrade to 16-bit compressed colors
+            .allowHardware(true) // High-performance GPU hardware bitmap rendering (zero heap GC pauses)
             .memoryCache {
                 MemoryCache.Builder(this)
-                    .maxSizePercent(0.30) // 30% of RAM for ultra-fluid 4K wallpaper caching
+                    .maxSizePercent(0.25) // 25% of RAM for ultra-fluid wallpaper memory caching
                     .build()
             }
             .diskCache {
@@ -44,14 +44,8 @@ class AuraApplication : Application(), Configuration.Provider, ImageLoaderFactor
                     .maxSizeBytes(500L * 1024L * 1024L) // 500 MB high-speed disk cache
                     .build()
             }
-            .crossfade(true)
+            .crossfade(150)
             .respectCacheHeaders(true)
-            .allowHardware(true) // High-performance GPU hardware bitmap rendering
-            .apply {
-                if (BuildConfig.DEBUG) {
-                    logger(DebugLogger())
-                }
-            }
             .build()
     }
 }

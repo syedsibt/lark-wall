@@ -8,6 +8,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -20,6 +21,9 @@ data class SettingsUiState(
     val activeLiveWallpaperTitle: String? = null,
     val cacheSizeBytes: Long = 0L,
     val downloadsSizeBytes: Long = 0L,
+    val userEmail: String? = null,
+    val userName: String? = null,
+    val isSigningIn: Boolean = false,
     val message: String? = null
 ) {
     val formattedCacheSize: String
@@ -57,15 +61,49 @@ class SettingsViewModel @Inject constructor(
                 settingsRepository.isBatterySaverEnabled,
                 settingsRepository.activeLiveWallpaperTitle
             ) { theme, wifiOnly, batterySaver, liveTitle ->
-                _uiState.value.copy(
-                    themeMode = theme,
-                    isWifiOnly = wifiOnly,
-                    isBatterySaverEnabled = batterySaver,
-                    activeLiveWallpaperTitle = liveTitle
+                _uiState.update {
+                    it.copy(
+                        themeMode = theme,
+                        isWifiOnly = wifiOnly,
+                        isBatterySaverEnabled = batterySaver,
+                        activeLiveWallpaperTitle = liveTitle
+                    )
+                }
+            }.collect()
+        }
+        viewModelScope.launch {
+            combine(
+                settingsRepository.userEmail,
+                settingsRepository.userName
+            ) { email, name ->
+                _uiState.update {
+                    it.copy(
+                        userEmail = email,
+                        userName = name
+                    )
+                }
+            }.collect()
+        }
+    }
+
+    fun signInWithGoogle(email: String = "syedsibt@gmail.com", name: String = "Syed Sibt") {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isSigningIn = true) }
+            kotlinx.coroutines.delay(500)
+            settingsRepository.setGoogleUser(email, name)
+            _uiState.update {
+                it.copy(
+                    isSigningIn = false,
+                    message = "Signed in with Google as $email"
                 )
-            }.collect { newState ->
-                _uiState.value = newState
             }
+        }
+    }
+
+    fun signOutGoogle() {
+        viewModelScope.launch {
+            settingsRepository.clearGoogleUser()
+            _uiState.update { it.copy(message = "Signed out from Google account") }
         }
     }
 

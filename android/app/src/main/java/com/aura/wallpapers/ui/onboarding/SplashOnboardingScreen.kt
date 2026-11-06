@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.aura.wallpapers.ui.components.GoogleSignInButton
 import com.aura.wallpapers.ui.theme.WallixaAccentLavender
 import com.aura.wallpapers.ui.theme.WallixaPrimary
 import com.aura.wallpapers.ui.theme.WallixaPrimaryContainer
@@ -197,30 +198,40 @@ fun SplashOnboardingScreen(
                     badgeIcon = Icons.Filled.Speed
                 )
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
+                // Primary: Sign in with Google
+                GoogleSignInButton(
+                    onClick = onGetStartedClick,
+                    text = "Continue with Google",
+                    isDarkTheme = true
+                )
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                // Secondary: Explore as Guest
                 Button(
                     onClick = onGetStartedClick,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(54.dp),
+                        .height(50.dp),
                     shape = RoundedCornerShape(16.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = WallixaPrimaryContainer,
+                        containerColor = Color.White.copy(alpha = 0.12f),
                         contentColor = Color.White
                     ),
-                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 12.dp)
+                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
                 ) {
                     Text(
-                        text = "Get Started",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
+                        text = "Explore as Guest",
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.SemiBold
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                         contentDescription = null,
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(18.dp)
                     )
                 }
 

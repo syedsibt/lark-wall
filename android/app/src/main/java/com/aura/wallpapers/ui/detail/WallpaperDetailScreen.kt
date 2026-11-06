@@ -96,6 +96,10 @@ import com.aura.wallpapers.ui.theme.WallixaPrimary
 import com.aura.wallpapers.ui.theme.WallixaPrimaryContainer
 import com.aura.wallpapers.ui.theme.WallixaSecondaryContainer
 import com.aura.wallpapers.ui.theme.WallixaTertiary
+import android.net.Uri
+import android.view.LayoutInflater
+import java.io.File
+import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -159,13 +163,34 @@ fun WallpaperDetailScreen(
                 modifier = Modifier.fillMaxSize()
             )
 
-            // Video player with explicit key on previewVideoUrl
+            // Video player with TextureView for zero-glitch Compose rendering
             val exoPlayer = remember(live.previewVideoUrl) {
+                val uri = if (live.previewVideoUrl.startsWith("asset:///")) {
+                    val assetPath = live.previewVideoUrl.removePrefix("asset:///")
+                    val cacheFile = File(context.cacheDir, "preview_${File(assetPath).name}")
+                    if (!cacheFile.exists() || cacheFile.length() == 0L) {
+                        runCatching {
+                            context.assets.open(assetPath).use { input ->
+                                FileOutputStream(cacheFile).use { output ->
+                                    input.copyTo(output)
+                                }
+                            }
+                        }
+                    }
+                    if (cacheFile.exists() && cacheFile.length() > 0L) {
+                        Uri.fromFile(cacheFile)
+                    } else {
+                        Uri.parse(live.previewVideoUrl)
+                    }
+                } else {
+                    Uri.parse(live.previewVideoUrl)
+                }
+
                 ExoPlayer.Builder(context).build().apply {
                     repeatMode = Player.REPEAT_MODE_ALL
                     volume = 0f
                     videoScalingMode = C.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING
-                    setMediaItem(MediaItem.fromUri(live.previewVideoUrl))
+                    setMediaItem(MediaItem.fromUri(uri))
                     prepare()
                     playWhenReady = true
                 }
@@ -180,13 +205,13 @@ fun WallpaperDetailScreen(
 
             AndroidView(
                 factory = { ctx ->
-                    PlayerView(ctx).apply {
-                        player = exoPlayer
-                        useController = false
-                        layoutParams = FrameLayout.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            ViewGroup.LayoutParams.MATCH_PARENT
-                        )
+                    val view = LayoutInflater.from(ctx).inflate(R.layout.view_exo_player, null, false) as PlayerView
+                    view.player = exoPlayer
+                    view
+                },
+                update = { view ->
+                    if (view.player != exoPlayer) {
+                        view.player = exoPlayer
                     }
                 },
                 modifier = Modifier.fillMaxSize()

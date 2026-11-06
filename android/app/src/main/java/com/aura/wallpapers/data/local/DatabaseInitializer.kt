@@ -26,46 +26,47 @@ class DatabaseInitializer @Inject constructor(
     suspend fun populateIfNeeded() = withContext(ioDispatcher) {
         try {
             val prefs = context.getSharedPreferences("aura_catalog_prefs", Context.MODE_PRIVATE)
-            val hasLoadedUltraHD = prefs.getBoolean("catalog_ultra_hd_10x_v5", false)
-            val catCount = categoryDao.getCategoryCount()
-            val wallCount = wallpaperDao.getWallpaperCount()
-            val liveCount = wallpaperDao.getLiveWallpaperCount()
-
-            val shouldReload = !hasLoadedUltraHD || catCount < 37 || wallCount < 1200 || liveCount < 280
-
-            if (shouldReload) {
-                runCatching {
-                    context.assets.open("initial_categories.json").use { stream ->
-                        val type = object : TypeToken<List<CategoryEntity>>() {}.type
-                        val categories: List<CategoryEntity> = gson.fromJson(InputStreamReader(stream), type)
-                        if (!categories.isNullOrEmpty()) {
-                            categoryDao.insertCategories(categories)
-                        }
-                    }
-                }
-
-                runCatching {
-                    context.assets.open("initial_wallpapers.json").use { stream ->
-                        val type = object : TypeToken<List<WallpaperEntity>>() {}.type
-                        val wallpapers: List<WallpaperEntity> = gson.fromJson(InputStreamReader(stream), type)
-                        if (!wallpapers.isNullOrEmpty()) {
-                            wallpaperDao.insertWallpapers(wallpapers)
-                        }
-                    }
-                }
-
-                runCatching {
-                    context.assets.open("initial_live_wallpapers.json").use { stream ->
-                        val type = object : TypeToken<List<LiveWallpaperEntity>>() {}.type
-                        val liveWallpapers: List<LiveWallpaperEntity> = gson.fromJson(InputStreamReader(stream), type)
-                        if (!liveWallpapers.isNullOrEmpty()) {
-                            wallpaperDao.insertLiveWallpapers(liveWallpapers)
-                        }
-                    }
-                }
-
-                prefs.edit().putBoolean("catalog_ultra_hd_10x_v5", true).apply()
+            val hasLoadedUltraHD = prefs.getBoolean("catalog_ultra_hd_10x_v6", false)
+            if (hasLoadedUltraHD) {
+                // Already populated, skip disk I/O entirely for instant startup
+                return@withContext
             }
+
+            runCatching {
+                context.assets.open("initial_categories.json").use { stream ->
+                    val type = object : TypeToken<List<CategoryEntity>>() {}.type
+                    val categories: List<CategoryEntity> = gson.fromJson(InputStreamReader(stream), type)
+                    if (!categories.isNullOrEmpty()) {
+                        categoryDao.insertCategories(categories)
+                    }
+                }
+            }
+
+            runCatching {
+                context.assets.open("initial_wallpapers.json").use { stream ->
+                    val type = object : TypeToken<List<WallpaperEntity>>() {}.type
+                    val wallpapers: List<WallpaperEntity> = gson.fromJson(InputStreamReader(stream), type)
+                    if (!wallpapers.isNullOrEmpty()) {
+                        wallpapers.chunked(200).forEach { chunk ->
+                            wallpaperDao.insertWallpapers(chunk)
+                        }
+                    }
+                }
+            }
+
+            runCatching {
+                context.assets.open("initial_live_wallpapers.json").use { stream ->
+                    val type = object : TypeToken<List<LiveWallpaperEntity>>() {}.type
+                    val liveWallpapers: List<LiveWallpaperEntity> = gson.fromJson(InputStreamReader(stream), type)
+                    if (!liveWallpapers.isNullOrEmpty()) {
+                        liveWallpapers.chunked(100).forEach { chunk ->
+                            wallpaperDao.insertLiveWallpapers(chunk)
+                        }
+                    }
+                }
+            }
+
+            prefs.edit().putBoolean("catalog_ultra_hd_10x_v6", true).apply()
         } catch (e: Exception) {
             e.printStackTrace()
         }

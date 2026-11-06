@@ -26,6 +26,13 @@ class UserPreferencesManager @Inject constructor(
     private val keyBatterySaver = booleanPreferencesKey(Constants.PREF_KEY_BATTERY_SAVER_ENABLED)
     private val keyActiveLivePath = stringPreferencesKey(Constants.PREF_KEY_ACTIVE_LIVE_WALLPAPER_PATH)
     private val keyActiveLiveTitle = stringPreferencesKey(Constants.PREF_KEY_ACTIVE_LIVE_WALLPAPER_TITLE)
+    private val keyUserEmail = stringPreferencesKey("user_google_email")
+    private val keyUserName = stringPreferencesKey("user_google_name")
+    private val keyUserPhotoUrl = stringPreferencesKey("user_google_photo_url")
+
+    val userEmail: Flow<String?> = context.dataStore.data.map { it[keyUserEmail] }
+    val userName: Flow<String?> = context.dataStore.data.map { it[keyUserName] }
+    val userPhotoUrl: Flow<String?> = context.dataStore.data.map { it[keyUserPhotoUrl] }
 
     val themeMode: Flow<ThemeMode> = context.dataStore.data.map { prefs ->
         val raw = prefs[keyThemeMode] ?: ThemeMode.DARK.name
@@ -77,5 +84,25 @@ class UserPreferencesManager @Inject constructor(
             .putString(Constants.PREF_KEY_ACTIVE_LIVE_WALLPAPER_PATH, path)
             .putString(Constants.PREF_KEY_ACTIVE_LIVE_WALLPAPER_TITLE, title)
             .apply()
+    }
+
+    suspend fun setGoogleUser(email: String, name: String, photoUrl: String? = null) {
+        context.dataStore.edit { prefs ->
+            prefs[keyUserEmail] = email
+            prefs[keyUserName] = name
+            if (photoUrl != null) {
+                prefs[keyUserPhotoUrl] = photoUrl
+            } else {
+                prefs.remove(keyUserPhotoUrl)
+            }
+        }
+    }
+
+    suspend fun clearGoogleUser() {
+        context.dataStore.edit { prefs ->
+            prefs.remove(keyUserEmail)
+            prefs.remove(keyUserName)
+            prefs.remove(keyUserPhotoUrl)
+        }
     }
 }

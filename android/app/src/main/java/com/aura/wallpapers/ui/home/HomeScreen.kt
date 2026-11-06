@@ -187,7 +187,7 @@ fun HomeScreen(
                 val wallpapersList = if (uiState.trendingWallpapers.isNotEmpty()) uiState.trendingWallpapers else uiState.recentlyAddedWallpapers
                 val pairs = wallpapersList.chunked(2)
 
-                items(pairs) { rowItems ->
+                items(pairs, key = { rowItems -> rowItems.firstOrNull()?.id ?: "" }) { rowItems ->
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()

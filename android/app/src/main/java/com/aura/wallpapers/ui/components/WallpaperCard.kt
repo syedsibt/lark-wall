@@ -61,13 +61,9 @@ fun WallpaperCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .aspectRatio(9f / 16f)
-                .shadow(
-                    elevation = 6.dp,
-                    shape = RoundedCornerShape(20.dp),
-                    spotColor = WallixaPrimary.copy(alpha = 0.12f)
-                )
                 .clip(RoundedCornerShape(20.dp)),
             shape = RoundedCornerShape(20.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceVariant
             )

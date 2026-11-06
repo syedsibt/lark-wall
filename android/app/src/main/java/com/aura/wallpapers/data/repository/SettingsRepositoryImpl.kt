@@ -26,6 +26,9 @@ class SettingsRepositoryImpl @Inject constructor(
     override val isWifiOnly: Flow<Boolean> = preferencesManager.isWifiOnly
     override val isBatterySaverEnabled: Flow<Boolean> = preferencesManager.isBatterySaverEnabled
     override val activeLiveWallpaperTitle: Flow<String?> = preferencesManager.activeLiveWallpaperTitle
+    override val userEmail: Flow<String?> = preferencesManager.userEmail
+    override val userName: Flow<String?> = preferencesManager.userName
+    override val userPhotoUrl: Flow<String?> = preferencesManager.userPhotoUrl
 
     override suspend fun setThemeMode(mode: ThemeMode) {
         preferencesManager.setThemeMode(mode)
@@ -41,6 +44,14 @@ class SettingsRepositoryImpl @Inject constructor(
 
     override suspend fun setActiveLiveWallpaper(path: String, title: String) {
         preferencesManager.setActiveLiveWallpaper(path, title)
+    }
+
+    override suspend fun setGoogleUser(email: String, name: String, photoUrl: String?) {
+        preferencesManager.setGoogleUser(email, name, photoUrl)
+    }
+
+    override suspend fun clearGoogleUser() {
+        preferencesManager.clearGoogleUser()
     }
 
     override suspend fun calculateCacheSizeBytes(): Long = withContext(ioDispatcher) {
