@@ -194,7 +194,7 @@ fun WallpaperDetailScreen(
         } else if (uiState.wallpaper != null) {
             AsyncImage(
                 model = ImageRequest.Builder(context)
-                    .data(uiState.wallpaper!!.previewUrl)
+                    .data(uiState.wallpaper!!.originalUrl)
                     .crossfade(true)
                     .build(),
                 contentDescription = uiState.wallpaper!!.title,

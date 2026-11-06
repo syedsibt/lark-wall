@@ -394,10 +394,10 @@ CATEGORIES = [
         "is_live": True,
         "images": ["photo-1473448912268-2022ce9509d8", "photo-1448375240586-882707db888b", "photo-1426604966848-d7adac402bff"],
         "videos": [
-            "https://assets.mixkit.co/videos/preview/mixkit-forest-stream-in-the-sunlight-529-large.mp4",
-            "https://assets.mixkit.co/videos/preview/mixkit-waterfall-in-forest-2213-large.mp4",
-            "https://assets.mixkit.co/videos/preview/mixkit-tree-branches-in-the-breeze-1188-large.mp4",
-            "https://assets.mixkit.co/videos/preview/mixkit-fog-over-the-mountains-1639-large.mp4"
+            "asset:///live_videos/aurora_space_loop.mp4",
+            "asset:///live_videos/tokyo_rain_loop.mp4",
+            "asset:///live_videos/minimal_gradient_flow_loop.mp4",
+            "asset:///live_videos/dark_academia_flame_loop.mp4"
         ],
         "title_words": ["Cascading Mist", "Swaying Pines", "Sunlit Brook", "Alpine Breeze", "Forest Rain", "Rolling Fog", "Whispering Canopy", "Canyon Waterfall", "Glacial Torrent", "Green Glade", "Bamboo Rustle", "Lakeside Ripple", "Meadow Drift", "River Current", "Wild Rapids", "Morning Dewdrop", "Autumn Leaf Fall", "Woodland Breeze", "Fern Sway", "Tranquil Spring"]
     },
@@ -410,10 +410,10 @@ CATEGORIES = [
         "is_live": True,
         "images": ["photo-1531366936337-7c912a4589a7", "photo-1451187580459-43490279c0fa", "photo-1506703719100-a0f3a48c0f86"],
         "videos": [
-            "https://assets.mixkit.co/videos/preview/mixkit-stars-in-space-1610-large.mp4",
-            "https://assets.mixkit.co/videos/preview/mixkit-flight-through-space-and-stars-41312-large.mp4",
-            "https://assets.mixkit.co/videos/preview/mixkit-night-sky-with-stars-at-a-calm-lake-time-lapse-1605-large.mp4",
-            "https://assets.mixkit.co/videos/preview/mixkit-glowing-aurora-borealis-in-norway-42967-large.mp4"
+            "asset:///live_videos/aurora_space_loop.mp4",
+            "asset:///live_videos/cyberpunk_neon_loop.mp4",
+            "asset:///live_videos/liquid_chrome_loop.mp4",
+            "asset:///live_videos/minimal_gradient_flow_loop.mp4"
         ],
         "title_words": ["Aurora Waves", "Drifting Stardust", "Orbiting Saturn", "Pulsar Beacon", "Nebula Flare", "Cosmic Void Loop", "Galactic Core", "Solar Prominence", "Interstellar Drift", "Deep Space Flow", "Supernova Shockwave", "Lunar Eclipse", "Starfield Warp", "Astral Sweep", "Celestial Orbit", "Cosmic Rays", "Black Hole Vortex", "Meteor Stream", "Andromeda Spiral", "Starlight Lullaby"]
     },
@@ -426,10 +426,10 @@ CATEGORIES = [
         "is_live": True,
         "images": ["photo-1618005182384-a83a8bd57fbe", "photo-1604076913837-52ab5629fba9", "photo-1541701494587-cb58502866ab"],
         "videos": [
-            "https://assets.mixkit.co/videos/preview/mixkit-flowing-water-surface-3171-large.mp4",
-            "https://assets.mixkit.co/videos/preview/mixkit-colored-smoke-flowing-on-black-background-41279-large.mp4",
-            "https://assets.mixkit.co/videos/preview/mixkit-bubbles-moving-in-slow-motion-41885-large.mp4",
-            "https://assets.mixkit.co/videos/preview/mixkit-ink-swirling-in-water-in-slow-motion-41908-large.mp4"
+            "asset:///live_videos/minimal_gradient_flow_loop.mp4",
+            "asset:///live_videos/liquid_chrome_loop.mp4",
+            "asset:///live_videos/cyberpunk_neon_loop.mp4",
+            "asset:///live_videos/dark_academia_flame_loop.mp4"
         ],
         "title_words": ["Liquid Chrome Flow", "Chromatic Ribbon", "Mercury Roll", "Particle Swarm", "Fluid Spectrum", "Iridescent Shift", "Energy Pulse", "Vortex Flow", "Plasma Ribbon", "Quantum Wave", "Molten Glass", "Color Swirl", "Bioluminescent Fluid", "Magnetic Flux", "Resonance Wave", "Prism Drift", "Aura Luminescence", "Digital Smoke", "Psychedelic Ribbon", "Harmonic Pulse"]
     },
@@ -442,10 +442,10 @@ CATEGORIES = [
         "is_live": True,
         "images": ["photo-1518770660439-4636190af475", "photo-1538481199705-c710c4e965fc", "photo-1550745165-9bc0b252726f"],
         "videos": [
-            "https://assets.mixkit.co/videos/preview/mixkit-traffic-at-night-in-a-city-4318-large.mp4",
-            "https://assets.mixkit.co/videos/preview/mixkit-neon-lights-tunnel-in-a-club-41716-large.mp4",
-            "https://assets.mixkit.co/videos/preview/mixkit-circuit-board-microchip-technological-background-42173-large.mp4",
-            "https://assets.mixkit.co/videos/preview/mixkit-light-leaks-on-dark-background-41913-large.mp4"
+            "asset:///live_videos/cyberpunk_neon_loop.mp4",
+            "asset:///live_videos/tokyo_rain_loop.mp4",
+            "asset:///live_videos/aurora_space_loop.mp4",
+            "asset:///live_videos/liquid_chrome_loop.mp4"
         ],
         "title_words": ["Cyber Highway", "Neon Tunnel Warp", "Data Circuit Flow", "Light Streak Highway", "Pulse Grid", "Kinetic Beam", "Speed of Light", "Glitch Matrix", "Hyperdrive Warp", "Laser Sweep", "Soundwave Ring", "Photon Stream", "Infinity Corridor", "City Light Velocity", "Fiber Optic Rush", "Binary Stream", "Tunnel Vision", "Luminescent Tracks", "Electro Shockwave", "Synth Highway"]
     },
@@ -458,10 +458,10 @@ CATEGORIES = [
         "is_live": True,
         "images": ["photo-1618005182384-a83a8bd57fbe", "photo-1550684848-fac1c5b4e853", "photo-1541701494587-cb58502866ab"],
         "videos": [
-            "https://assets.mixkit.co/videos/preview/mixkit-flowing-water-surface-3171-large.mp4",
-            "https://assets.mixkit.co/videos/preview/mixkit-ink-swirling-in-water-in-slow-motion-41908-large.mp4",
-            "https://assets.mixkit.co/videos/preview/mixkit-bubbles-moving-in-slow-motion-41885-large.mp4",
-            "https://assets.mixkit.co/videos/preview/mixkit-colored-smoke-flowing-on-black-background-41279-large.mp4"
+            "asset:///live_videos/liquid_chrome_loop.mp4",
+            "asset:///live_videos/minimal_gradient_flow_loop.mp4",
+            "asset:///live_videos/cyberpunk_neon_loop.mp4",
+            "asset:///live_videos/aurora_space_loop.mp4"
         ],
         "title_words": ["Molten Chrome Ripple", "Liquid Mercury Loop", "Fluid Titanium 60FPS", "Iridescent Chrome Flow", "Cybernetic Silver Wave", "Molten Metal Pulse", "Reflective Mercury Wave", "Chrome Vortex 60FPS", "Silver Tide Loop", "Platinum Surge", "Liquid Steel 60FPS", "Mercury Cascade", "Chrome Current", "Liquid Mirror Loop", "Metallic Surge", "Chroma Ripple", "Molten Quartz Pulse", "Silver Pulse Loop", "Chrome Horizon 60FPS", "Fluid Obsidian"]
     },
@@ -474,10 +474,10 @@ CATEGORIES = [
         "is_live": True,
         "images": ["photo-1514565131-fce0801e5785", "photo-1519501025264-65ba15a82390", "photo-1477959858617-67f30bc75b82"],
         "videos": [
-            "https://assets.mixkit.co/videos/preview/mixkit-traffic-at-night-in-a-city-4318-large.mp4",
-            "https://assets.mixkit.co/videos/preview/mixkit-neon-lights-tunnel-in-a-club-41716-large.mp4",
-            "https://assets.mixkit.co/videos/preview/mixkit-light-leaks-on-dark-background-41913-large.mp4",
-            "https://assets.mixkit.co/videos/preview/mixkit-glowing-aurora-borealis-in-norway-42967-large.mp4"
+            "asset:///live_videos/tokyo_rain_loop.mp4",
+            "asset:///live_videos/dark_academia_flame_loop.mp4",
+            "asset:///live_videos/cyberpunk_neon_loop.mp4",
+            "asset:///live_videos/aurora_space_loop.mp4"
         ],
         "title_words": ["Tokyo Rain Window 60FPS", "Cyberpunk Neon Drops", "Midnight Street Reflections", "Glowing Rain Bokeh 60FPS", "Dystopian Rain Loop", "Shibuya Rain Drift", "Night Konbini Loop", "Subway Neon Pulse", "Akihabara Glow 60FPS", "Lo-Fi Dusk Loop", "Neon Alley Mist", "Tokyo Highrise Rain", "Rain on Window 60FPS", "Midnight City Drift", "Cyber Dusk Loop", "Neon Street Glow", "Rainy Shinjuku Loop", "Lo-Fi Rooftop Rain", "Cyber Rain 60FPS", "Tokyo Midnight Pulse"]
     }
@@ -566,11 +566,11 @@ def generate():
             slug = f"{cat['slug']}-{title.lower().replace(' ', '-').replace("'", '')}-{static_counter:04d}"
             
             photo_id = img_pool[i % len(img_pool)]
-            # Deterministic color adjustments to create 40 visually distinct high-res assets
+            # Ultra HD 4K Quality (10X Image Fidelity Upgrade)
             hue_param = f"&hue={(i * 37) % 360}" if i % 2 == 1 else ""
-            thumb_url = f"https://images.unsplash.com/{photo_id}?w=600&auto=format&fit=crop&q=80{hue_param}"
-            prev_url = f"https://images.unsplash.com/{photo_id}?w=1200&auto=format&fit=crop&q=85{hue_param}"
-            orig_url = f"https://images.unsplash.com/{photo_id}?auto=format&fit=crop&q=95{hue_param}"
+            thumb_url = f"https://images.unsplash.com/{photo_id}?w=1080&h=1920&fit=crop&crop=faces,center&q=95&auto=format{hue_param}"
+            prev_url = f"https://images.unsplash.com/{photo_id}?w=2160&h=3840&fit=crop&crop=faces,center&q=98&auto=format{hue_param}"
+            orig_url = f"https://images.unsplash.com/{photo_id}?w=3840&h=5120&fit=crop&crop=faces,center&q=100&auto=format{hue_param}"
             
             tags = [cat["slug"], cat["name"].lower(), base_word.lower(), "4k", "wallpaper", "ultra-hd"]
             tags_csv = ",".join(tags)
@@ -657,7 +657,7 @@ def generate():
 
             photo_id = img_pool[i % len(img_pool)]
             video_url = video_pool[i % len(video_pool)]
-            thumb_url = f"https://images.unsplash.com/{photo_id}?w=600&auto=format&fit=crop&q=80"
+            thumb_url = f"https://images.unsplash.com/{photo_id}?w=1080&h=1920&fit=crop&crop=faces,center&q=95&auto=format"
 
             tags = [cat["slug"], cat["name"].lower(), base_word.lower(), "live", "loop", "60fps", "video"]
             tags_csv = ",".join(tags)

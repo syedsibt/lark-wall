@@ -4,9 +4,12 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.media.MediaPlayer
+import android.net.Uri
 import android.os.Build
 import android.os.PowerManager
 import android.service.wallpaper.WallpaperService
+import android.util.Log
 import android.view.SurfaceHolder
 import androidx.annotation.OptIn
 import androidx.media3.common.C
@@ -17,6 +20,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import com.aura.wallpapers.util.Constants
 import java.io.File
+import java.io.FileOutputStream
 
 class AuraLiveWallpaperService : WallpaperService() {
 
@@ -26,40 +30,63 @@ class AuraLiveWallpaperService : WallpaperService() {
 
     inner class AuraVideoEngine : Engine() {
 
+        private val TAG = "LarkLiveEngine"
         private var exoPlayer: ExoPlayer? = null
+        private var mediaPlayer: MediaPlayer? = null
+        private var currentHolder: SurfaceHolder? = null
         private var isVisibleOnScreen: Boolean = false
         private var powerSaveModeActive: Boolean = false
+        private var activeVideoPath: String? = null
 
-        private val powerSaveReceiver = object : BroadcastReceiver() {
+        private val wallpaperReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
-                if (PowerManager.ACTION_POWER_SAVE_MODE_CHANGED == intent?.action) {
-                    checkPowerSaveStatus()
-                    evaluatePlaybackState()
+                when (intent?.action) {
+                    PowerManager.ACTION_POWER_SAVE_MODE_CHANGED -> {
+                        checkPowerSaveStatus()
+                        evaluatePlaybackState()
+                    }
+                    ACTION_UPDATE_LIVE_WALLPAPER -> {
+                        val newPath = intent.getStringExtra("video_path")
+                        if (!newPath.isNullOrBlank()) {
+                            Log.d(TAG, "Dynamic update broadcast received: $newPath")
+                            activeVideoPath = newPath
+                            currentHolder?.let { reloadPlayer(it) }
+                        }
+                    }
                 }
             }
         }
 
         override fun onCreate(surfaceHolder: SurfaceHolder?) {
             super.onCreate(surfaceHolder)
-            registerReceiver(powerSaveReceiver, IntentFilter(PowerManager.ACTION_POWER_SAVE_MODE_CHANGED))
+            val filter = IntentFilter().apply {
+                addAction(PowerManager.ACTION_POWER_SAVE_MODE_CHANGED)
+                addAction(ACTION_UPDATE_LIVE_WALLPAPER)
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                registerReceiver(wallpaperReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
+            } else {
+                registerReceiver(wallpaperReceiver, filter)
+            }
             checkPowerSaveStatus()
         }
 
-        @OptIn(UnstableApi::class)
         override fun onSurfaceCreated(holder: SurfaceHolder) {
             super.onSurfaceCreated(holder)
+            currentHolder = holder
             initPlayer(holder)
         }
 
         override fun onSurfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
             super.onSurfaceChanged(holder, format, width, height)
+            currentHolder = holder
             exoPlayer?.setVideoSurfaceHolder(holder)
         }
 
         override fun onSurfaceDestroyed(holder: SurfaceHolder) {
             super.onSurfaceDestroyed(holder)
-            exoPlayer?.pause()
-            exoPlayer?.clearVideoSurfaceHolder(holder)
+            currentHolder = null
+            releasePlayers()
         }
 
         override fun onVisibilityChanged(visible: Boolean) {
@@ -68,41 +95,86 @@ class AuraLiveWallpaperService : WallpaperService() {
             evaluatePlaybackState()
         }
 
+        private fun resolveActiveVideoFile(): File {
+            val prefs = getSharedPreferences("aura_engine_prefs", Context.MODE_PRIVATE)
+            val storedPath = activeVideoPath ?: prefs.getString(Constants.PREF_KEY_ACTIVE_LIVE_WALLPAPER_PATH, null)
+
+            if (!storedPath.isNullOrBlank()) {
+                val f = File(storedPath)
+                if (f.exists() && f.length() > 0L) {
+                    return f
+                }
+            }
+
+            // Extract default bundled offline live loop to internal storage
+            val fallbackFile = File(filesDir, "default_live_wallpaper.mp4")
+            if (!fallbackFile.exists() || fallbackFile.length() == 0L) {
+                runCatching {
+                    assets.open("live_videos/liquid_chrome_loop.mp4").use { input ->
+                        FileOutputStream(fallbackFile).use { output ->
+                            input.copyTo(output)
+                        }
+                    }
+                }
+            }
+            return fallbackFile
+        }
+
+        private fun reloadPlayer(holder: SurfaceHolder) {
+            releasePlayers()
+            initPlayer(holder)
+        }
+
         @OptIn(UnstableApi::class)
         private fun initPlayer(holder: SurfaceHolder) {
-            if (exoPlayer != null) {
-                exoPlayer?.setVideoSurfaceHolder(holder)
+            val videoFile = resolveActiveVideoFile()
+            Log.d(TAG, "Initializing playback with video: ${videoFile.absolutePath} (${videoFile.length()} bytes)")
+
+            try {
+                // Primary: Media3 ExoPlayer Engine
+                exoPlayer = ExoPlayer.Builder(applicationContext).build().apply {
+                    repeatMode = Player.REPEAT_MODE_ALL
+                    volume = 0f
+                    videoScalingMode = C.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING
+                    setMediaItem(MediaItem.fromUri(Uri.fromFile(videoFile)))
+                    setVideoSurfaceHolder(holder)
+                    prepare()
+                    addListener(object : Player.Listener {
+                        override fun onPlayerError(error: PlaybackException) {
+                            Log.e(TAG, "ExoPlayer error occurred, activating MediaPlayer fallback: ${error.message}")
+                            // Automatic fallback to native Android MediaPlayer
+                            releaseExoPlayer()
+                            initNativeMediaPlayer(holder, videoFile)
+                        }
+                    })
+                }
                 evaluatePlaybackState()
-                return
+            } catch (e: Exception) {
+                Log.e(TAG, "ExoPlayer init failed, activating MediaPlayer fallback", e)
+                releaseExoPlayer()
+                initNativeMediaPlayer(holder, videoFile)
             }
+        }
 
-            // Read active video path from SharedPreferences
-            val prefs = getSharedPreferences("aura_engine_prefs", Context.MODE_PRIVATE)
-            val videoPath = prefs.getString(Constants.PREF_KEY_ACTIVE_LIVE_WALLPAPER_PATH, null)
-
-            val mediaItem = if (videoPath != null && File(videoPath).exists()) {
-                MediaItem.fromUri(videoPath)
-            } else {
-                // Fallback bundled or default streaming sample
-                MediaItem.fromUri("https://assets.mixkit.co/videos/preview/mixkit-stars-in-space-1610-large.mp4")
-            }
-
-            exoPlayer = ExoPlayer.Builder(applicationContext).build().apply {
-                repeatMode = Player.REPEAT_MODE_ALL
-                volume = 0f // Guaranteed zero audio track emission
-                videoScalingMode = C.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING
-                setMediaItem(mediaItem)
-                setVideoSurfaceHolder(holder)
-                prepare()
-                addListener(object : Player.Listener {
-                    override fun onPlayerError(error: PlaybackException) {
-                        // In case of unsupported codec or stream failure, pause gracefully without crashing
-                        pause()
+        private fun initNativeMediaPlayer(holder: SurfaceHolder, videoFile: File) {
+            try {
+                mediaPlayer = MediaPlayer().apply {
+                    setDataSource(applicationContext, Uri.fromFile(videoFile))
+                    setDisplay(holder)
+                    isLooping = true
+                    setVolume(0f, 0f)
+                    setOnPreparedListener { mp ->
+                        evaluatePlaybackState()
                     }
-                })
+                    setOnErrorListener { _, what, extra ->
+                        Log.e(TAG, "Native MediaPlayer error what=$what extra=$extra")
+                        true
+                    }
+                    prepareAsync()
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Native MediaPlayer init failed", e)
             }
-
-            evaluatePlaybackState()
         }
 
         private fun checkPowerSaveStatus() {
@@ -111,32 +183,60 @@ class AuraLiveWallpaperService : WallpaperService() {
         }
 
         private fun evaluatePlaybackState() {
-            val player = exoPlayer ?: return
-
             val prefs = getSharedPreferences("aura_engine_prefs", Context.MODE_PRIVATE)
             val batterySaverPref = prefs.getBoolean(Constants.PREF_KEY_BATTERY_SAVER_ENABLED, true)
-
-            // Strict Performance Guard: Only play if surface is visible and not restricted by battery saver
             val shouldPlay = isVisibleOnScreen && !(powerSaveModeActive && batterySaverPref)
 
-            if (shouldPlay) {
-                if (!player.isPlaying) {
-                    player.play()
+            // ExoPlayer control
+            exoPlayer?.let { player ->
+                if (shouldPlay) {
+                    if (!player.isPlaying) player.play()
+                } else {
+                    if (player.isPlaying) player.pause()
                 }
-            } else {
-                if (player.isPlaying) {
-                    player.pause()
+            }
+
+            // Native MediaPlayer control
+            mediaPlayer?.let { player ->
+                runCatching {
+                    if (shouldPlay) {
+                        if (!player.isPlaying) player.start()
+                    } else {
+                        if (player.isPlaying) player.pause()
+                    }
                 }
             }
         }
 
-        override fun onDestroy() {
-            super.onDestroy()
-            runCatching { unregisterReceiver(powerSaveReceiver) }
+        private fun releaseExoPlayer() {
             exoPlayer?.stop()
-            exoPlayer?.clearVideoSurfaceHolder(surfaceHolder)
+            currentHolder?.let { exoPlayer?.clearVideoSurfaceHolder(it) }
             exoPlayer?.release()
             exoPlayer = null
         }
+
+        private fun releaseNativeMediaPlayer() {
+            runCatching {
+                mediaPlayer?.stop()
+                mediaPlayer?.reset()
+                mediaPlayer?.release()
+            }
+            mediaPlayer = null
+        }
+
+        private fun releasePlayers() {
+            releaseExoPlayer()
+            releaseNativeMediaPlayer()
+        }
+
+        override fun onDestroy() {
+            super.onDestroy()
+            runCatching { unregisterReceiver(wallpaperReceiver) }
+            releasePlayers()
+        }
+    }
+
+    companion object {
+        const val ACTION_UPDATE_LIVE_WALLPAPER = "com.aura.wallpapers.ACTION_UPDATE_LIVE_WALLPAPER"
     }
 }

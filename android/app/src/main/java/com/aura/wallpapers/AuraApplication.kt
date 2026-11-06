@@ -1,6 +1,7 @@
 package com.aura.wallpapers
 
 import android.app.Application
+import android.graphics.Bitmap
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import coil.ImageLoader
@@ -30,20 +31,22 @@ class AuraApplication : Application(), Configuration.Provider, ImageLoaderFactor
     override fun newImageLoader(): ImageLoader {
         return ImageLoader.Builder(this)
             .okHttpClient(okHttpClient)
+            .bitmapConfig(Bitmap.Config.ARGB_8888) // 32-bit True Color (10X Image Fidelity, Zero Banding)
+            .allowRgb565(false) // Never degrade to 16-bit compressed colors
             .memoryCache {
                 MemoryCache.Builder(this)
-                    .maxSizePercent(0.25) // Up to 25% of device RAM for instant smooth scrolling
+                    .maxSizePercent(0.30) // 30% of RAM for ultra-fluid 4K wallpaper caching
                     .build()
             }
             .diskCache {
                 DiskCache.Builder()
                     .directory(File(cacheDir, "image_cache"))
-                    .maxSizeBytes(250L * 1024L * 1024L) // 250 MB disk cache
+                    .maxSizeBytes(500L * 1024L * 1024L) // 500 MB high-speed disk cache
                     .build()
             }
             .crossfade(true)
             .respectCacheHeaders(true)
-            .allowHardware(true) // Fast hardware bitmap decoding
+            .allowHardware(true) // High-performance GPU hardware bitmap rendering
             .apply {
                 if (BuildConfig.DEBUG) {
                     logger(DebugLogger())
