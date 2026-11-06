@@ -26,7 +26,7 @@ class DatabaseInitializer @Inject constructor(
     suspend fun populateIfNeeded() = withContext(ioDispatcher) {
         try {
             val prefs = context.getSharedPreferences("aura_catalog_prefs", Context.MODE_PRIVATE)
-            val hasLoadedUltraHD = prefs.getBoolean("catalog_ultra_hd_10x_v3", false)
+            val hasLoadedUltraHD = prefs.getBoolean("catalog_ultra_hd_10x_v4", false)
             val catCount = categoryDao.getCategoryCount()
             val wallCount = wallpaperDao.getWallpaperCount()
             val liveCount = wallpaperDao.getLiveWallpaperCount()
@@ -64,7 +64,7 @@ class DatabaseInitializer @Inject constructor(
                     }
                 }
 
-                prefs.edit().putBoolean("catalog_ultra_hd_10x_v3", true).apply()
+                prefs.edit().putBoolean("catalog_ultra_hd_10x_v4", true).apply()
             }
         } catch (e: Exception) {
             e.printStackTrace()

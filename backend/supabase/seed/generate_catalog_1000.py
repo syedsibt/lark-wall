@@ -566,11 +566,11 @@ def generate():
             slug = f"{cat['slug']}-{title.lower().replace(' ', '-').replace("'", '')}-{static_counter:04d}"
             
             photo_id = img_pool[i % len(img_pool)]
-            # Ultra HD 4K Quality (10X Image Fidelity Upgrade)
+            # Enhanced Strong Colors (+35 Saturation, +20 Contrast for OLED Battery Savings, +15 Sharpening, Lightweight WebP)
             hue_param = f"&hue={(i * 37) % 360}" if i % 2 == 1 else ""
-            thumb_url = f"https://images.unsplash.com/{photo_id}?w=1080&h=1920&fit=crop&crop=faces,center&q=95&auto=format{hue_param}"
-            prev_url = f"https://images.unsplash.com/{photo_id}?w=2160&h=3840&fit=crop&crop=faces,center&q=98&auto=format{hue_param}"
-            orig_url = f"https://images.unsplash.com/{photo_id}?w=3840&h=5120&fit=crop&crop=faces,center&q=100&auto=format{hue_param}"
+            thumb_url = f"https://images.unsplash.com/{photo_id}?w=720&h=1280&fit=crop&crop=faces,center&sat=35&con=20&sharp=15&fm=webp&q=85{hue_param}"
+            prev_url = f"https://images.unsplash.com/{photo_id}?w=1080&h=2340&fit=crop&crop=faces,center&sat=35&con=20&sharp=15&fm=webp&q=88{hue_param}"
+            orig_url = f"https://images.unsplash.com/{photo_id}?w=1440&h=3120&fit=crop&crop=faces,center&sat=35&con=20&sharp=15&fm=webp&q=90{hue_param}"
             
             tags = [cat["slug"], cat["name"].lower(), base_word.lower(), "4k", "wallpaper", "ultra-hd"]
             tags_csv = ",".join(tags)
@@ -657,7 +657,7 @@ def generate():
 
             photo_id = img_pool[i % len(img_pool)]
             video_url = video_pool[i % len(video_pool)]
-            thumb_url = f"https://images.unsplash.com/{photo_id}?w=1080&h=1920&fit=crop&crop=faces,center&q=95&auto=format"
+            thumb_url = f"https://images.unsplash.com/{photo_id}?w=720&h=1280&fit=crop&crop=faces,center&sat=35&con=20&sharp=15&fm=webp&q=85"
 
             tags = [cat["slug"], cat["name"].lower(), base_word.lower(), "live", "loop", "60fps", "video"]
             tags_csv = ",".join(tags)
