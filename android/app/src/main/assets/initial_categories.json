@@ -372,5 +372,38 @@
     "isLive": true,
     "displayOrder": 34,
     "wallpaperCount": 40
+  },
+  {
+    "id": "c0000035-0000-0000-0000-000000000035",
+    "name": "Cartoon Legends",
+    "slug": "cartoon-legends",
+    "description": "Iconic cartoon legends, 3D animated figures, cute chibis, Disney classics, and comic pop-art heroes.",
+    "iconName": "cruelty_free",
+    "coverImageUrl": "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=600&auto=format&fit=crop&q=80",
+    "isLive": false,
+    "displayOrder": 35,
+    "wallpaperCount": 40
+  },
+  {
+    "id": "c0000036-0000-0000-0000-000000000036",
+    "name": "Anime & Manga Heroes",
+    "slug": "anime-heroes",
+    "description": "Shonen power auras, Saiyan transformations, cursed energy domains, and high-contrast dark fantasy anime art.",
+    "iconName": "smart_toy",
+    "coverImageUrl": "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=600&auto=format&fit=crop&q=80",
+    "isLive": false,
+    "displayOrder": 36,
+    "wallpaperCount": 40
+  },
+  {
+    "id": "c0000037-0000-0000-0000-000000000037",
+    "name": "Live Anime & Toons",
+    "slug": "live-anime-toons",
+    "description": "High-voltage Saiyan energy halos, Chidori spark arcs, glowing manga auras, and animated cartoon loops.",
+    "iconName": "play_circle",
+    "coverImageUrl": "https://images.unsplash.com/photo-1563245372-f21724e3856d?w=600&auto=format&fit=crop&q=80",
+    "isLive": true,
+    "displayOrder": 37,
+    "wallpaperCount": 40
   }
 ]

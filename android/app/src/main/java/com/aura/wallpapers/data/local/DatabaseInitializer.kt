@@ -26,12 +26,12 @@ class DatabaseInitializer @Inject constructor(
     suspend fun populateIfNeeded() = withContext(ioDispatcher) {
         try {
             val prefs = context.getSharedPreferences("aura_catalog_prefs", Context.MODE_PRIVATE)
-            val hasLoadedUltraHD = prefs.getBoolean("catalog_ultra_hd_10x_v4", false)
+            val hasLoadedUltraHD = prefs.getBoolean("catalog_ultra_hd_10x_v5", false)
             val catCount = categoryDao.getCategoryCount()
             val wallCount = wallpaperDao.getWallpaperCount()
             val liveCount = wallpaperDao.getLiveWallpaperCount()
 
-            val shouldReload = !hasLoadedUltraHD || catCount == 0 || wallCount == 0 || liveCount == 0
+            val shouldReload = !hasLoadedUltraHD || catCount < 37 || wallCount < 1200 || liveCount < 280
 
             if (shouldReload) {
                 runCatching {
@@ -64,7 +64,7 @@ class DatabaseInitializer @Inject constructor(
                     }
                 }
 
-                prefs.edit().putBoolean("catalog_ultra_hd_10x_v4", true).apply()
+                prefs.edit().putBoolean("catalog_ultra_hd_10x_v5", true).apply()
             }
         } catch (e: Exception) {
             e.printStackTrace()

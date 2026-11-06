@@ -205,4 +205,44 @@ for f in range(total_frames):
 out6.release()
 print(f"6. Minimal Gradient: {path6}")
 
-print("\nSUCCESS: All 6 Color-Enhanced & Battery-Smart Live Wallpaper Loops generated!")
+# 7. Cartoon & Anime Aura Loop: High-voltage Saiyan / Domain Expansion electric aura on OLED true black
+path7 = os.path.join(output_dir, "cartoon_anime_aura_loop.mp4")
+out7 = cv2.VideoWriter(path7, fourcc, fps, (width, height))
+np.random.seed(99)
+num_particles = 45
+px_base = np.random.uniform(width * 0.25, width * 0.75, num_particles)
+py_base = np.random.uniform(height * 0.35, height * 0.85, num_particles)
+pspeed = np.random.uniform(1.5, 3.5, num_particles)
+psize = np.random.randint(3, 8, num_particles)
+
+for f in range(total_frames):
+    t = (f / total_frames) * 2 * math.pi
+    frame = np.zeros((height, width, 3), dtype=np.uint8) # Pitch black OLED
+    cx, cy = width // 2, int(height * 0.58)
+    pulse = 1.0 + 0.12 * math.sin(t * 3)
+    base_radius = int(160 * pulse)
+    
+    for r_offset, col in [(80, (255, 140, 20)), (40, (255, 220, 40)), (0, (255, 255, 180))]:
+        rad = int(base_radius + r_offset + 15 * math.sin(t * 4 + r_offset))
+        cv2.circle(frame, (cx, cy), rad, col, -1)
+    
+    frame = cv2.GaussianBlur(frame, (91, 91), 0)
+    
+    for ring in range(3):
+        ring_rad = int(base_radius * (0.8 + ring * 0.35) + 12 * math.cos(t * 2 + ring))
+        angle_start = int((f * 8 + ring * 120) % 360)
+        cv2.ellipse(frame, (cx, cy), (ring_rad, int(ring_rad * 0.7)), 0, angle_start, angle_start + 85, (255, 255, 0), 4)
+        cv2.ellipse(frame, (cx, cy), (ring_rad, int(ring_rad * 0.7)), 0, angle_start + 180, angle_start + 265, (0, 240, 255), 4)
+
+    for i in range(num_particles):
+        y_pos = int((py_base[i] - f * pspeed[i] * 9) % height)
+        x_pos = int(px_base[i] + math.sin(t * 3 + i) * 25)
+        bright = int(220 + 35 * math.sin(t * 4 + i))
+        color = (bright, int(bright * 0.85), 30) if i % 2 == 0 else (40, int(bright * 0.9), bright)
+        cv2.circle(frame, (x_pos, y_pos), psize[i], color, -1)
+
+    out7.write(frame)
+out7.release()
+print(f"7. Cartoon Anime Aura: {path7}")
+
+print("\nSUCCESS: All 7 Color-Enhanced & Battery-Smart Live Wallpaper Loops generated!")

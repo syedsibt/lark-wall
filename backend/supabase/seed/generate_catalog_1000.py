@@ -480,6 +480,70 @@ CATEGORIES = [
             "asset:///live_videos/aurora_space_loop.mp4"
         ],
         "title_words": ["Tokyo Rain Window 60FPS", "Cyberpunk Neon Drops", "Midnight Street Reflections", "Glowing Rain Bokeh 60FPS", "Dystopian Rain Loop", "Shibuya Rain Drift", "Night Konbini Loop", "Subway Neon Pulse", "Akihabara Glow 60FPS", "Lo-Fi Dusk Loop", "Neon Alley Mist", "Tokyo Highrise Rain", "Rain on Window 60FPS", "Midnight City Drift", "Cyber Dusk Loop", "Neon Street Glow", "Rainy Shinjuku Loop", "Lo-Fi Rooftop Rain", "Cyber Rain 60FPS", "Tokyo Midnight Pulse"]
+    },
+    # Cartoon & Anime Categories (3)
+    {
+        "index": 35,
+        "name": "Cartoon Legends",
+        "slug": "cartoon-legends",
+        "description": "Iconic cartoon legends, 3D animated figures, cute chibis, Disney classics, and comic pop-art heroes.",
+        "icon": "cruelty_free",
+        "is_live": False,
+        "images": [
+            "photo-1607604276583-eef5d076aa5f", "photo-1563245372-f21724e3856d", "photo-1596727147705-61a532a659bd",
+            "photo-1608889825103-eb5ed706fc64", "photo-1579783900882-c0d3dad7b119", "photo-1559583109-3e7968136c99",
+            "photo-1572635196237-14b3f281503f", "photo-1580477667995-2b94f01c9516", "photo-1612036782180-6f0b6cd846fe",
+            "photo-1569003339405-ea396a5a8a90", "photo-1627672360124-4ed09583e14c", "photo-1534447677768-be436bb09401"
+        ],
+        "title_words": [
+            "Stitch Neon Chill", "Pikachu Thunder Spark", "Baby Groot Bloom", "Miles Morales Web",
+            "SpongeBob Golden Vibe", "Bart Simpson Skate", "Mickey Retro Noir", "Tom & Jerry Duo",
+            "Totoro Forest Breeze", "Minion Banana Rush", "Kuromi Dark Velvet", "Rick & Morty Dimension",
+            "Spider-Gwen Neon Prism", "Shin-Chan Street Drip", "Daffy Duck Cyberpunk", "Bugs Bunny Swagger",
+            "Courage Twilight Hero", "Dexter Secret Lab", "Powerpuff Blossom Glow", "Sonic Speed Dash"
+        ]
+    },
+    {
+        "index": 36,
+        "name": "Anime & Manga Heroes",
+        "slug": "anime-heroes",
+        "description": "Shonen power auras, Saiyan transformations, cursed energy domains, and high-contrast dark fantasy anime art.",
+        "icon": "smart_toy",
+        "is_live": False,
+        "images": [
+            "photo-1578632767115-351597cf2477", "photo-1618336753974-aae8e04506aa", "photo-1581833971358-2c8b550f87b3",
+            "photo-1563089145-599997674d42", "photo-1531259683007-016a7b628fc3", "photo-1514565131-fce0801e5785",
+            "photo-1550745165-9bc0b252726f"
+        ],
+        "title_words": [
+            "Gojo Satoru Domain", "Sukuna Malevolent Shrine", "Luffy Gear 5 Sun God", "Zoro King of Hell",
+            "Naruto Kurama Chakra", "Sasuke Susanoo Eye", "Itachi Tsukuyomi Crow", "Kakashi Lightning Blade",
+            "Goku Ultra Instinct", "Vegeta Ultra Ego", "Gohan Beast Wrath", "Tanjiro Hinokami Kagura",
+            "Zenitsu Thunderclap 6-Fold", "Rengoku Flame Blaze", "Eren Founding Titan", "Levi Blade Hurricane",
+            "Ichigo Final Getsuga", "Killua Godspeed Lightning", "Gon Freecss Jajanken", "Edward Elric Transmutation"
+        ]
+    },
+    {
+        "index": 37,
+        "name": "Live Anime & Toons",
+        "slug": "live-anime-toons",
+        "description": "High-voltage Saiyan energy halos, Chidori spark arcs, glowing manga auras, and animated cartoon loops.",
+        "icon": "play_circle",
+        "is_live": True,
+        "images": ["photo-1563245372-f21724e3856d", "photo-1578632767115-351597cf2477", "photo-1607604276583-eef5d076aa5f"],
+        "videos": [
+            "asset:///live_videos/cartoon_anime_aura_loop.mp4",
+            "asset:///live_videos/cyberpunk_neon_loop.mp4",
+            "asset:///live_videos/liquid_chrome_loop.mp4",
+            "asset:///live_videos/tokyo_rain_loop.mp4"
+        ],
+        "title_words": [
+            "Super Saiyan Aura 60FPS", "Domain Expansion Pulse", "Electric Chidori Arc", "Hinokami Flame Dance",
+            "Pikachu Volt Tackle 60FPS", "Gojo Infinite Glow", "Neon Web-Slinger Loop", "Gear 5 Haki Surge",
+            "Shadow Clone Shuriken", "Bankai Black Flare", "Titan Steam Surge", "Alchemist Circle Glow",
+            "Demon Flame Horizon", "Thunder Breathing Flash", "Chibi Energy Burst", "Cyber Anime Horizon",
+            "Susanoo Armor Pulse", "Nine Tails Chakra Loop", "One For All Spark 60FPS", "Ultra Instinct Drift"
+        ]
     }
 ]
 
