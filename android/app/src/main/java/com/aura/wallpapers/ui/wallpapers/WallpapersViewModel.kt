@@ -1,5 +1,6 @@
 package com.aura.wallpapers.ui.wallpapers
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aura.wallpapers.data.local.DatabaseInitializer
@@ -19,13 +20,23 @@ import javax.inject.Inject
 
 @HiltViewModel
 class WallpapersViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
     private val databaseInitializer: DatabaseInitializer,
     private val getWallpapersUseCase: GetWallpapersUseCase,
     private val getCategoriesUseCase: GetCategoriesUseCase,
     private val toggleFavoriteUseCase: ToggleFavoriteUseCase
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(WallpapersUiState())
+    private val navCategoryId: String? = savedStateHandle.get<String>("categoryId")?.takeIf { it.isNotBlank() }
+    private val navSortStr: String? = savedStateHandle.get<String>("sort")?.takeIf { it.isNotBlank() }
+    private val navSort: SortOption = navSortStr?.let { runCatching { SortOption.valueOf(it) }.getOrNull() } ?: SortOption.POPULAR
+
+    private val _uiState = MutableStateFlow(
+        WallpapersUiState(
+            selectedCategoryId = navCategoryId,
+            selectedSort = navSort
+        )
+    )
     val uiState: StateFlow<WallpapersUiState> = _uiState.asStateFlow()
 
     init {
@@ -38,7 +49,7 @@ class WallpapersViewModel @Inject constructor(
 
     private fun loadCategories() {
         viewModelScope.launch {
-            getCategoriesUseCase(liveOnly = false)
+            getCategoriesUseCase(staticOnly = true)
                 .catch { }
                 .collect { list ->
                     _uiState.update { it.copy(categories = list) }

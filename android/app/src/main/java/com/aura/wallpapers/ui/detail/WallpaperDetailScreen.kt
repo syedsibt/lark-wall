@@ -77,6 +77,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -166,11 +169,15 @@ fun WallpaperDetailScreen(
             )
 
             // Video player with TextureView for zero-glitch Compose rendering
-            val exoPlayer = remember(live.previewVideoUrl) {
+            val exoPlayer = remember(live.id, live.previewVideoUrl) {
                 val uri = if (live.previewVideoUrl.startsWith("asset:///")) {
                     val assetPath = live.previewVideoUrl.removePrefix("asset:///")
                     val cacheFile = File(context.cacheDir, "preview_${File(assetPath).name}")
-                    if (!cacheFile.exists() || cacheFile.length() == 0L) {
+                    val expectedLength = runCatching {
+                        context.assets.openFd(assetPath).use { it.length }
+                    }.getOrDefault(-1L)
+
+                    if (!cacheFile.exists() || cacheFile.length() == 0L || (expectedLength > 0L && cacheFile.length() != expectedLength)) {
                         runCatching {
                             context.assets.open(assetPath).use { input ->
                                 FileOutputStream(cacheFile).use { output ->
@@ -198,8 +205,22 @@ fun WallpaperDetailScreen(
                 }
             }
 
-            DisposableEffect(exoPlayer) {
+            val lifecycleOwner = LocalLifecycleOwner.current
+            DisposableEffect(lifecycleOwner, exoPlayer) {
+                val observer = LifecycleEventObserver { _, event ->
+                    when (event) {
+                        Lifecycle.Event.ON_RESUME -> {
+                            exoPlayer.play()
+                        }
+                        Lifecycle.Event.ON_PAUSE -> {
+                            exoPlayer.pause()
+                        }
+                        else -> {}
+                    }
+                }
+                lifecycleOwner.lifecycle.addObserver(observer)
                 onDispose {
+                    lifecycleOwner.lifecycle.removeObserver(observer)
                     exoPlayer.stop()
                     exoPlayer.release()
                 }

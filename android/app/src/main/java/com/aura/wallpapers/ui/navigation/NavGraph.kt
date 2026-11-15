@@ -60,12 +60,26 @@ fun NavGraph(
                 },
                 onNavigateToSearch = { navController.navigate(Screen.Search.route) },
                 onNavigateToSettings = { navController.navigate(Screen.Settings.route) },
-                onNavigateToWallpapers = { navController.navigate(Screen.Wallpapers.route) },
+                onNavigateToWallpapers = { catId, sort ->
+                    navController.navigate(Screen.Wallpapers.createRoute(catId, sort?.name))
+                },
                 onNavigateToLive = { navController.navigate(Screen.LiveWallpapers.route) }
             )
         }
 
-        composable(Screen.Wallpapers.route) {
+        composable(
+            route = Screen.Wallpapers.route,
+            arguments = listOf(
+                navArgument("categoryId") {
+                    type = NavType.StringType
+                    defaultValue = ""
+                },
+                navArgument("sort") {
+                    type = NavType.StringType
+                    defaultValue = ""
+                }
+            )
+        ) {
             val viewModel: WallpapersViewModel = hiltViewModel()
             WallpapersScreen(
                 viewModel = viewModel,

@@ -57,7 +57,7 @@ data class NavigationItem(
 val bottomNavItems = listOf(
     NavigationItem(Screen.Home.route, "Home", Icons.Filled.Home, Icons.Outlined.Home),
     NavigationItem(Screen.LiveWallpapers.route, "Live", Icons.Filled.MotionPhotosOn, Icons.Outlined.MotionPhotosOn),
-    NavigationItem(Screen.Wallpapers.route, "Explore", Icons.Filled.GridView, Icons.Outlined.GridView),
+    NavigationItem(Screen.Wallpapers.createRoute(), "Explore", Icons.Filled.GridView, Icons.Outlined.GridView),
     NavigationItem(Screen.Favorites.route, "Saved", Icons.Filled.Favorite, Icons.Outlined.FavoriteBorder),
     NavigationItem(Screen.Settings.route, "Profile", Icons.Filled.Person, Icons.Outlined.Person)
 )
@@ -91,7 +91,9 @@ fun AuraBottomNavigation(
             verticalAlignment = Alignment.CenterVertically
         ) {
             bottomNavItems.forEach { item ->
-                val selected = currentRoute == item.route
+                val selected = currentRoute == item.route ||
+                        (item.title == "Explore" && currentRoute?.startsWith("wallpapers") == true) ||
+                        (item.title == "Home" && (currentRoute == Screen.Home.route || currentRoute == null))
                 val pillColor by animateColorAsState(
                     targetValue = if (selected) WallixaSecondaryContainer.copy(alpha = 0.8f) else Color.Transparent,
                     animationSpec = tween(durationMillis = 200),

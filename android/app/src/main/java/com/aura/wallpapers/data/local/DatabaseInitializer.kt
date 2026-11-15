@@ -11,6 +11,9 @@ import com.google.gson.reflect.TypeToken
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import java.io.BufferedReader
 import java.io.InputStreamReader
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -23,52 +26,58 @@ class DatabaseInitializer @Inject constructor(
     private val ioDispatcher: CoroutineDispatcher,
     private val gson: Gson
 ) {
+    private val initMutex = Mutex()
+
     suspend fun populateIfNeeded() = withContext(ioDispatcher) {
-        try {
-            val prefs = context.getSharedPreferences("aura_catalog_prefs", Context.MODE_PRIVATE)
-            val hasLoadedUltraHD = prefs.getBoolean("catalog_ultra_hd_10x_v6", false)
-            if (hasLoadedUltraHD) {
-                // Already populated, skip disk I/O entirely for instant startup
-                return@withContext
-            }
-
-            runCatching {
-                context.assets.open("initial_categories.json").use { stream ->
-                    val type = object : TypeToken<List<CategoryEntity>>() {}.type
-                    val categories: List<CategoryEntity> = gson.fromJson(InputStreamReader(stream), type)
-                    if (!categories.isNullOrEmpty()) {
-                        categoryDao.insertCategories(categories)
-                    }
+        initMutex.withLock {
+            try {
+                val prefs = context.getSharedPreferences("aura_catalog_prefs", Context.MODE_PRIVATE)
+                val hasLoadedUltraHD = prefs.getBoolean("catalog_ultra_hd_clean_v8", false)
+                if (hasLoadedUltraHD) {
+                    // Already populated, skip disk I/O entirely for instant startup
+                    return@withContext
                 }
-            }
 
-            runCatching {
-                context.assets.open("initial_wallpapers.json").use { stream ->
-                    val type = object : TypeToken<List<WallpaperEntity>>() {}.type
-                    val wallpapers: List<WallpaperEntity> = gson.fromJson(InputStreamReader(stream), type)
-                    if (!wallpapers.isNullOrEmpty()) {
-                        wallpapers.chunked(200).forEach { chunk ->
-                            wallpaperDao.insertWallpapers(chunk)
+                runCatching {
+                    context.assets.open("initial_categories.json").use { stream ->
+                        BufferedReader(InputStreamReader(stream), 32768).use { reader ->
+                            val type = object : TypeToken<List<CategoryEntity>>() {}.type
+                            val categories: List<CategoryEntity> = gson.fromJson(reader, type)
+                            if (!categories.isNullOrEmpty()) {
+                                categoryDao.insertCategories(categories)
+                            }
                         }
                     }
                 }
-            }
 
-            runCatching {
-                context.assets.open("initial_live_wallpapers.json").use { stream ->
-                    val type = object : TypeToken<List<LiveWallpaperEntity>>() {}.type
-                    val liveWallpapers: List<LiveWallpaperEntity> = gson.fromJson(InputStreamReader(stream), type)
-                    if (!liveWallpapers.isNullOrEmpty()) {
-                        liveWallpapers.chunked(100).forEach { chunk ->
-                            wallpaperDao.insertLiveWallpapers(chunk)
+                runCatching {
+                    context.assets.open("initial_wallpapers.json").use { stream ->
+                        BufferedReader(InputStreamReader(stream), 32768).use { reader ->
+                            val type = object : TypeToken<List<WallpaperEntity>>() {}.type
+                            val wallpapers: List<WallpaperEntity> = gson.fromJson(reader, type)
+                            if (!wallpapers.isNullOrEmpty()) {
+                                wallpaperDao.insertWallpapers(wallpapers)
+                            }
                         }
                     }
                 }
-            }
 
-            prefs.edit().putBoolean("catalog_ultra_hd_10x_v6", true).apply()
-        } catch (e: Exception) {
-            e.printStackTrace()
+                runCatching {
+                    context.assets.open("initial_live_wallpapers.json").use { stream ->
+                        BufferedReader(InputStreamReader(stream), 32768).use { reader ->
+                            val type = object : TypeToken<List<LiveWallpaperEntity>>() {}.type
+                            val liveWallpapers: List<LiveWallpaperEntity> = gson.fromJson(reader, type)
+                            if (!liveWallpapers.isNullOrEmpty()) {
+                                wallpaperDao.insertLiveWallpapers(liveWallpapers)
+                            }
+                        }
+                    }
+                }
+
+                prefs.edit().putBoolean("catalog_ultra_hd_clean_v8", true).commit()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
 }

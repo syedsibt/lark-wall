@@ -8,11 +8,11 @@ import javax.inject.Inject
 class GetCategoriesUseCase @Inject constructor(
     private val categoryRepository: CategoryRepository
 ) {
-    operator fun invoke(liveOnly: Boolean = false): Flow<List<Category>> {
-        return if (liveOnly) {
-            categoryRepository.getLiveCategories()
-        } else {
-            categoryRepository.getAllCategories()
+    operator fun invoke(liveOnly: Boolean = false, staticOnly: Boolean = false): Flow<List<Category>> {
+        return when {
+            liveOnly -> categoryRepository.getLiveCategories()
+            staticOnly -> categoryRepository.getStaticCategories()
+            else -> categoryRepository.getAllCategories()
         }
     }
 

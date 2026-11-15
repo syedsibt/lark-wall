@@ -29,8 +29,13 @@ class PrepareLiveWallpaperUseCase @Inject constructor(
 
             val rawUrl = liveWallpaper.originalVideoUrl
 
-            // 1. Extract or copy to a guaranteed local storage file on device if not already cached
-            if (!targetFile.exists() || targetFile.length() < 1024L) {
+            val expectedLength = if (rawUrl.startsWith("asset:///")) {
+                val assetPath = rawUrl.removePrefix("asset:///")
+                runCatching { context.assets.openFd(assetPath).use { it.length } }.getOrDefault(-1L)
+            } else -1L
+
+            // 1. Extract or copy to a guaranteed local storage file on device if not already cached or if size mismatched
+            if (!targetFile.exists() || targetFile.length() < 1024L || (expectedLength > 0L && targetFile.length() != expectedLength)) {
                 val tempFile = File(liveDir, "live_${safeId}.tmp")
                 if (rawUrl.startsWith("asset:///")) {
                     val assetPath = rawUrl.removePrefix("asset:///")

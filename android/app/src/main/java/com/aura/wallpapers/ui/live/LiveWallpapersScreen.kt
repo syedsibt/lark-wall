@@ -203,6 +203,19 @@ fun LiveWallpapersScreen(
             }
         }
 
+        // Filter live wallpapers based on selected tag
+        val displayedWallpapers = remember(uiState.liveWallpapers, selectedTag) {
+            if (selectedTag == "All") {
+                uiState.liveWallpapers
+            } else {
+                uiState.liveWallpapers.filter { live ->
+                    live.categoryName.contains(selectedTag, ignoreCase = true) ||
+                    live.tags.any { it.contains(selectedTag, ignoreCase = true) } ||
+                    live.title.contains(selectedTag, ignoreCase = true)
+                }
+            }
+        }
+
         if (uiState.isLoading) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = WallixaPrimary)
@@ -212,11 +225,11 @@ fun LiveWallpapersScreen(
                 message = uiState.error ?: stringResource(R.string.error_network),
                 onRetry = { viewModel.loadLiveWallpapers() }
             )
-        } else if (uiState.liveWallpapers.isEmpty()) {
+        } else if (displayedWallpapers.isEmpty()) {
             EmptyStateView(
                 icon = Icons.Outlined.PlayCircle,
-                title = "No Live Wallpapers Found",
-                description = "Live video wallpapers for this category will appear soon."
+                title = if (selectedTag == "All") "No Live Wallpapers Found" else "No $selectedTag Live Wallpapers",
+                description = if (selectedTag == "All") "Live video wallpapers will appear soon." else "Try selecting 'All' or another category tag."
             )
         } else {
             LazyVerticalGrid(
@@ -226,7 +239,7 @@ fun LiveWallpapersScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier.fillMaxSize()
             ) {
-                items(uiState.liveWallpapers, key = { it.id }) { live ->
+                items(displayedWallpapers, key = { it.id }) { live ->
                     LiveWallpaperCard(
                         liveWallpaper = live,
                         onClick = { onNavigateToDetail(live.id, true) },

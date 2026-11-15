@@ -82,7 +82,7 @@ fun HomeScreen(
     onNavigateToDetail: (String, Boolean) -> Unit,
     onNavigateToSearch: () -> Unit,
     onNavigateToSettings: () -> Unit,
-    onNavigateToWallpapers: () -> Unit,
+    onNavigateToWallpapers: (String?, com.aura.wallpapers.domain.usecase.SortOption?) -> Unit,
     onNavigateToLive: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -118,9 +118,9 @@ fun HomeScreen(
                 item {
                     WallixaSubNavChips(
                         selectedCategoryId = uiState.selectedCategoryId,
-                        onExploreClick = { viewModel.onCategorySelected(null) },
+                        onExploreClick = { onNavigateToWallpapers(null, null) },
                         onLiveClick = onNavigateToLive,
-                        onCategoriesClick = onNavigateToWallpapers
+                        onCategoriesClick = { onNavigateToWallpapers(null, null) }
                     )
                     Spacer(modifier = Modifier.height(10.dp))
                 }
@@ -141,10 +141,10 @@ fun HomeScreen(
                 // 3. Fast Shortcuts Row (Trending, New, Popular, Editor's)
                 item {
                     WallixaShortcutsRow(
-                        onTrendingClick = onNavigateToWallpapers,
-                        onNewClick = onNavigateToWallpapers,
-                        onPopularClick = onNavigateToWallpapers,
-                        onEditorsClick = onNavigateToWallpapers
+                        onTrendingClick = { onNavigateToWallpapers(null, com.aura.wallpapers.domain.usecase.SortOption.POPULAR) },
+                        onNewClick = { onNavigateToWallpapers(null, com.aura.wallpapers.domain.usecase.SortOption.NEWEST) },
+                        onPopularClick = { onNavigateToWallpapers(null, com.aura.wallpapers.domain.usecase.SortOption.MOST_DOWNLOADED) },
+                        onEditorsClick = { onNavigateToWallpapers(null, com.aura.wallpapers.domain.usecase.SortOption.FEATURED) }
                     )
                     Spacer(modifier = Modifier.height(20.dp))
                 }
@@ -155,7 +155,7 @@ fun HomeScreen(
                         WallixaSectionHeader(
                             title = stringResource(R.string.section_categories),
                             actionText = stringResource(R.string.explore_all),
-                            onActionClick = onNavigateToWallpapers
+                            onActionClick = { onNavigateToWallpapers(null, null) }
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         LazyRow(
@@ -165,7 +165,7 @@ fun HomeScreen(
                             items(uiState.categories, key = { it.id }) { cat ->
                                 CategoryCardItem(
                                     category = cat,
-                                    onClick = { viewModel.onCategorySelected(cat.id) }
+                                    onClick = { onNavigateToWallpapers(cat.id, null) }
                                 )
                             }
                         }
@@ -178,7 +178,7 @@ fun HomeScreen(
                     WallixaSectionHeader(
                         title = stringResource(R.string.section_todays_picks),
                         actionText = stringResource(R.string.view_all),
-                        onActionClick = onNavigateToWallpapers
+                        onActionClick = { onNavigateToWallpapers(null, null) }
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                 }

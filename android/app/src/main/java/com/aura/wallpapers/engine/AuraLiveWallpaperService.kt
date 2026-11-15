@@ -110,7 +110,11 @@ class AuraLiveWallpaperService : WallpaperService() {
 
             // Extract default bundled offline live loop to internal storage
             val fallbackFile = File(filesDir, "default_live_wallpaper.mp4")
-            if (!fallbackFile.exists() || fallbackFile.length() == 0L) {
+            val expectedLength = runCatching {
+                assets.openFd("live_videos/liquid_chrome_loop.mp4").use { it.length }
+            }.getOrDefault(-1L)
+
+            if (!fallbackFile.exists() || fallbackFile.length() == 0L || (expectedLength > 0L && fallbackFile.length() != expectedLength)) {
                 runCatching {
                     assets.open("live_videos/liquid_chrome_loop.mp4").use { input ->
                         FileOutputStream(fallbackFile).use { output ->
