@@ -24,44 +24,54 @@ class PrepareLiveWallpaperUseCase @Inject constructor(
     suspend operator fun invoke(liveWallpaper: LiveWallpaper): Result<Unit> = withContext(Dispatchers.IO) {
         runCatching {
             val liveDir = File(context.filesDir, "active_live_wallpaper").apply { mkdirs() }
-            val targetFile = File(liveDir, "current_live_wallpaper.mp4")
+            val safeId = liveWallpaper.id.replace(Regex("[^a-zA-Z0-9_-]"), "_")
+            val targetFile = File(liveDir, "live_${safeId}.mp4")
 
             val rawUrl = liveWallpaper.originalVideoUrl
 
-            // 1. Extract or copy to a guaranteed local storage file on device
-            if (rawUrl.startsWith("asset:///")) {
-                val assetPath = rawUrl.removePrefix("asset:///")
-                context.assets.open(assetPath).use { input ->
-                    FileOutputStream(targetFile).use { output ->
-                        input.copyTo(output)
+            // 1. Extract or copy to a guaranteed local storage file on device if not already cached
+            if (!targetFile.exists() || targetFile.length() < 1024L) {
+                val tempFile = File(liveDir, "live_${safeId}.tmp")
+                if (rawUrl.startsWith("asset:///")) {
+                    val assetPath = rawUrl.removePrefix("asset:///")
+                    context.assets.open(assetPath).use { input ->
+                        FileOutputStream(tempFile).use { output ->
+                            input.copyTo(output)
+                        }
+                    }
+                } else if (File(rawUrl).exists()) {
+                    File(rawUrl).copyTo(tempFile, overwrite = true)
+                } else if (rawUrl.startsWith("http://") || rawUrl.startsWith("https://")) {
+                    java.net.URL(rawUrl).openStream().use { input ->
+                        FileOutputStream(tempFile).use { output ->
+                            input.copyTo(output)
+                        }
+                    }
+                } else {
+                    // Try as raw asset name
+                    runCatching {
+                        context.assets.open("live_videos/$rawUrl").use { input ->
+                            FileOutputStream(tempFile).use { output ->
+                                input.copyTo(output)
+                            }
+                        }
                     }
                 }
-            } else if (File(rawUrl).exists()) {
-                File(rawUrl).copyTo(targetFile, overwrite = true)
-            } else if (rawUrl.startsWith("http://") || rawUrl.startsWith("https://")) {
-                java.net.URL(rawUrl).openStream().use { input ->
-                    FileOutputStream(targetFile).use { output ->
-                        input.copyTo(output)
-                    }
-                }
-            } else {
-                // Try as raw asset name
-                runCatching {
-                    context.assets.open("live_videos/$rawUrl").use { input ->
-                        FileOutputStream(targetFile).use { output ->
+
+                // Fallback safety check: If temp file is missing or empty, extract liquid chrome loop
+                if (!tempFile.exists() || tempFile.length() < 1024L) {
+                    context.assets.open("live_videos/liquid_chrome_loop.mp4").use { input ->
+                        FileOutputStream(tempFile).use { output ->
                             input.copyTo(output)
                         }
                     }
                 }
-            }
 
-            // Fallback safety check: If file is missing or empty, extract liquid chrome loop
-            if (!targetFile.exists() || targetFile.length() == 0L) {
-                context.assets.open("live_videos/liquid_chrome_loop.mp4").use { input ->
-                    FileOutputStream(targetFile).use { output ->
-                        input.copyTo(output)
-                    }
+                // Atomic file swap: reader never encounters truncated in-place files
+                if (targetFile.exists()) {
+                    targetFile.delete()
                 }
+                tempFile.renameTo(targetFile)
             }
 
             val savedPath = targetFile.absolutePath

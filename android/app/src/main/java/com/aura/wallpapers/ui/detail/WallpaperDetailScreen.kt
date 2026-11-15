@@ -52,9 +52,11 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -111,7 +113,7 @@ enum class DetailPreviewMode {
     CLEAN
 }
 
-@OptIn(UnstableApi::class)
+@OptIn(UnstableApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun WallpaperDetailScreen(
     viewModel: WallpaperDetailViewModel,
@@ -327,14 +329,14 @@ fun WallpaperDetailScreen(
             }
         }
 
-        // 4. Right Side Floating Action Rail (Normal Mode)
+        // 4. Right Side Floating Action Rail (Normal Mode) - Centered vertically so it never overlaps bars
         AnimatedVisibility(
             visible = previewMode == DetailPreviewMode.NORMAL,
             enter = fadeIn(),
             exit = fadeOut(),
             modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(top = 90.dp, end = 16.dp)
+                .align(Alignment.CenterEnd)
+                .padding(end = 16.dp)
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -366,30 +368,24 @@ fun WallpaperDetailScreen(
                 RailActionButton(
                     icon = Icons.Filled.Info,
                     label = "Info",
-                    onClick = { isInfoCardVisible = !isInfoCardVisible }
+                    onClick = { isInfoCardVisible = true }
                 )
             }
         }
 
-        // 5. Collapsible Artist & Details Card
-        AnimatedVisibility(
-            visible = isInfoCardVisible && previewMode == DetailPreviewMode.NORMAL,
-            enter = fadeIn() + slideInVertically { it / 2 },
-            exit = fadeOut() + slideOutVertically { it / 2 },
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .navigationBarsPadding()
-                .padding(bottom = 220.dp, start = 16.dp, end = 16.dp)
-        ) {
-            Card(
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color.White.copy(alpha = 0.95f)
-                ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 16.dp),
-                modifier = Modifier.fillMaxWidth()
+        // 5. Clean ModalBottomSheet for Artist & Specifications (Zero overlap with action sheet)
+        if (isInfoCardVisible) {
+            ModalBottomSheet(
+                onDismissRequest = { isInfoCardVisible = false },
+                containerColor = MaterialTheme.colorScheme.surface,
+                tonalElevation = 8.dp,
+                shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp, vertical = 16.dp)
+                ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -398,7 +394,7 @@ fun WallpaperDetailScreen(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Box(
                                 modifier = Modifier
-                                    .size(40.dp)
+                                    .size(44.dp)
                                     .clip(CircleShape)
                                     .background(WallixaSecondaryContainer),
                                 contentAlignment = Alignment.Center
@@ -407,66 +403,101 @@ fun WallpaperDetailScreen(
                                     text = "L",
                                     color = WallixaPrimary,
                                     fontWeight = FontWeight.Bold,
-                                    fontSize = 18.sp
+                                    fontSize = 20.sp
                                 )
                             }
-                            Spacer(modifier = Modifier.width(10.dp))
+                            Spacer(modifier = Modifier.width(12.dp))
                             Column {
                                 val title = uiState.wallpaper?.title ?: uiState.liveWallpaper?.title ?: "Astral Vista"
                                 Text(
                                     text = title,
-                                    color = Color(0xFF1A1B20),
-                                    fontSize = 15.sp,
-                                    fontWeight = FontWeight.Bold
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
                                 Text(
                                     text = "Curated by Lark Wall Studio",
-                                    color = Color(0xFF4A4455),
-                                    fontSize = 12.sp
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
-                        IconButton(onClick = { isInfoCardVisible = false }, modifier = Modifier.size(32.dp)) {
-                            Icon(
-                                imageVector = Icons.Filled.Close,
-                                contentDescription = "Close",
-                                tint = Color(0xFF4A4455),
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
                     }
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         Box(
                             modifier = Modifier
                                 .weight(1f)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(Color(0xFFF4F3FA))
-                                .padding(8.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                                .padding(12.dp)
                         ) {
                             Column {
-                                Text(text = "Aspect Ratio", color = WallixaPrimary, fontSize = 10.sp, fontWeight = FontWeight.SemiBold)
-                                Text(text = "9 : 19.5 (Bezel-Free)", color = Color(0xFF1A1B20), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                Text(text = "Aspect Ratio", color = WallixaPrimary, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text(text = "9 : 19.5 (Full Screen)", color = MaterialTheme.colorScheme.onSurface, fontSize = 13.sp, fontWeight = FontWeight.Bold)
                             }
                         }
                         Box(
                             modifier = Modifier
                                 .weight(1f)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(Color(0xFFF4F3FA))
-                                .padding(8.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                                .padding(12.dp)
                         ) {
                             Column {
-                                Text(text = "Palette Accent", color = WallixaPrimary, fontSize = 10.sp, fontWeight = FontWeight.SemiBold)
-                                Text(text = "Ultraviolet #7C3AED", color = Color(0xFF1A1B20), fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                Text(text = "Palette Accent", color = WallixaPrimary, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text(text = "Ultraviolet #7C3AED", color = MaterialTheme.colorScheme.onSurface, fontSize = 13.sp, fontWeight = FontWeight.Bold)
                             }
                         }
                     }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                                .padding(12.dp)
+                        ) {
+                            Column {
+                                Text(text = "Engine / Codec", color = WallixaPrimary, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text(
+                                    text = if (uiState.isLive) "Media3 H.264 60FPS" else "True 4K Ultra HD",
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                                .padding(12.dp)
+                        ) {
+                            Column {
+                                Text(text = "Power Profile", color = WallixaPrimary, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text(text = "OLED Smart Black", color = MaterialTheme.colorScheme.onSurface, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(24.dp))
                 }
             }
         }
@@ -525,21 +556,21 @@ fun WallpaperDetailScreen(
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         TargetSegmentButton(
-                            title = "Home Screen",
+                            title = "Home",
                             icon = Icons.Filled.Home,
                             isSelected = selectedTarget == ApplyTarget.HOME_SCREEN,
                             onClick = { selectedTarget = ApplyTarget.HOME_SCREEN },
                             modifier = Modifier.weight(1f)
                         )
                         TargetSegmentButton(
-                            title = "Lock Screen",
+                            title = "Lock",
                             icon = Icons.Filled.Lock,
                             isSelected = selectedTarget == ApplyTarget.LOCK_SCREEN,
                             onClick = { selectedTarget = ApplyTarget.LOCK_SCREEN },
                             modifier = Modifier.weight(1f)
                         )
                         TargetSegmentButton(
-                            title = "Both Screens",
+                            title = "Both",
                             icon = Icons.Filled.PhoneAndroid,
                             isSelected = selectedTarget == ApplyTarget.BOTH_SCREENS,
                             onClick = { selectedTarget = ApplyTarget.BOTH_SCREENS },
@@ -972,33 +1003,26 @@ private fun TargetSegmentButton(
             .clip(RoundedCornerShape(12.dp))
             .background(if (isSelected) Color.White else Color.Transparent)
             .clickable(onClick = onClick)
-            .padding(vertical = 8.dp),
+            .padding(vertical = 8.dp, horizontal = 4.dp),
         contentAlignment = Alignment.Center
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = if (isSelected) WallixaPrimary else Color.White,
-                    modifier = Modifier.size(16.dp)
-                )
-                if (isSelected) {
-                    Spacer(modifier = Modifier.width(2.dp))
-                    Icon(
-                        imageVector = Icons.Filled.CheckCircle,
-                        contentDescription = null,
-                        tint = WallixaTertiary,
-                        modifier = Modifier.size(12.dp)
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.height(2.dp))
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = if (isSelected) WallixaPrimary else Color.White,
+                modifier = Modifier.size(16.dp)
+            )
+            Spacer(modifier = Modifier.width(4.dp))
             Text(
                 text = title,
-                fontSize = 11.sp,
+                fontSize = 12.sp,
                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                color = if (isSelected) WallixaPrimary else Color.White
+                color = if (isSelected) WallixaPrimary else Color.White,
+                maxLines = 1
             )
         }
     }

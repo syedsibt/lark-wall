@@ -112,7 +112,7 @@ fun HomeScreen(
         } else {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(bottom = 20.dp)
+                contentPadding = PaddingValues(bottom = 96.dp)
             ) {
                 // 1. Horizontal Category Sub-Nav Chips (Explore, Live, Categories, Old Retro)
                 item {
@@ -341,16 +341,12 @@ private fun WallpaperOfTheDayHero(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(270.dp)
+            .height(280.dp)
             .padding(horizontal = 16.dp)
-            .shadow(
-                elevation = 16.dp,
-                shape = RoundedCornerShape(28.dp),
-                spotColor = WallixaPrimary.copy(alpha = 0.25f)
-            )
-            .clip(RoundedCornerShape(28.dp))
+            .clip(RoundedCornerShape(24.dp))
             .clickable(onClick = onClick),
-        shape = RoundedCornerShape(28.dp)
+        shape = RoundedCornerShape(24.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             AsyncImage(
@@ -499,29 +495,38 @@ private fun WallixaShortcutsRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
+            .padding(horizontal = 12.dp),
+        horizontalArrangement = Arrangement.SpaceAround,
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        ShortcutItem(
-            title = stringResource(R.string.shortcut_trending),
-            icon = Icons.Filled.LocalFireDepartment,
-            onClick = onTrendingClick
-        )
-        ShortcutItem(
-            title = stringResource(R.string.shortcut_new),
-            icon = Icons.AutoMirrored.Filled.ArrowForward,
-            onClick = onNewClick
-        )
-        ShortcutItem(
-            title = stringResource(R.string.shortcut_popular),
-            icon = Icons.AutoMirrored.Filled.TrendingUp,
-            onClick = onPopularClick
-        )
-        ShortcutItem(
-            title = stringResource(R.string.shortcut_editors),
-            icon = Icons.Filled.WorkspacePremium,
-            onClick = onEditorsClick
-        )
+        Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+            ShortcutItem(
+                title = stringResource(R.string.shortcut_trending),
+                icon = Icons.Filled.LocalFireDepartment,
+                onClick = onTrendingClick
+            )
+        }
+        Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+            ShortcutItem(
+                title = stringResource(R.string.shortcut_new),
+                icon = Icons.AutoMirrored.Filled.ArrowForward,
+                onClick = onNewClick
+            )
+        }
+        Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+            ShortcutItem(
+                title = stringResource(R.string.shortcut_popular),
+                icon = Icons.AutoMirrored.Filled.TrendingUp,
+                onClick = onPopularClick
+            )
+        }
+        Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+            ShortcutItem(
+                title = stringResource(R.string.shortcut_editors),
+                icon = Icons.Filled.WorkspacePremium,
+                onClick = onEditorsClick
+            )
+        }
     }
 }
 
