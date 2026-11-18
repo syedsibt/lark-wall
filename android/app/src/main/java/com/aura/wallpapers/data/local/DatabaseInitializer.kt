@@ -32,8 +32,8 @@ class DatabaseInitializer @Inject constructor(
         initMutex.withLock {
             try {
                 val prefs = context.getSharedPreferences("aura_catalog_prefs", Context.MODE_PRIVATE)
-                val hasLoadedInteractiveV11 = prefs.getBoolean("catalog_interactive_live_v11_pure", false)
-                if (hasLoadedInteractiveV11) {
+                val hasLoadedMotionLoops = prefs.getBoolean("catalog_interactive_live_v12_motionloops", false)
+                if (hasLoadedMotionLoops) {
                     // Already populated, skip disk I/O entirely for instant startup
                     return@withContext
                 }
@@ -75,7 +75,7 @@ class DatabaseInitializer @Inject constructor(
                     }
                 }
 
-                prefs.edit().putBoolean("catalog_interactive_live_v11_pure", true).commit()
+                prefs.edit().putBoolean("catalog_interactive_live_v12_motionloops", true).commit()
             } catch (e: Exception) {
                 e.printStackTrace()
             }

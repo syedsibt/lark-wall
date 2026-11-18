@@ -29,6 +29,62 @@ data class InteractiveWallpaperConfig(
 
 object InteractiveWallpaperRegistry {
 
+        val MOTION_LOOP_TITLES = mapOf(
+        "ml_01_aurora_drift" to "Aurora Drift",
+        "ml_02_liquid_chrome_bloom" to "Liquid Chrome Bloom",
+        "ml_03_orbital_eclipse" to "Orbital Eclipse",
+        "ml_04_prism_cascade" to "Prism Cascade",
+        "ml_05_biolume_garden" to "Biolume Garden",
+        "ml_06_dune_pulse" to "Dune Pulse",
+        "ml_07_neon_rain" to "Neon Rain",
+        "ml_08_celestial_dust" to "Celestial Dust",
+        "ml_09_ribbon_infinity" to "Ribbon Infinity",
+        "ml_10_solar_halo" to "Solar Halo",
+        "ml_11_pixel_flora" to "Pixel Flora",
+        "ml_12_magnetic_field" to "Magnetic Field",
+        "ml_13_y2k_halo_orbit" to "Y2K Halo Orbit",
+        "ml_14_glass_aurora" to "Glass Aurora",
+        "ml_15_dewdrop_biophilia" to "Dewdrop Biophilia",
+        "ml_16_velvet_jelly_forms" to "Velvet Jelly Forms",
+        "ml_17_dream_gradient_grid" to "Dream Gradient Grid",
+        "ml_18_glass_portal" to "Glass Portal",
+        "ml_19_neon_vector_pulse" to "Neon Vector Pulse",
+        "ml_20_pixel_constellation" to "Pixel Constellation",
+        "ml_21_parallax_slabs" to "Parallax Slabs",
+        "ml_22_outline_reveal" to "Outline Reveal",
+        "ml_23_pixel_to_line" to "Pixel-to-Line",
+        "ml_24_future_monolith" to "Future Monolith",
+        "ml_25_vector_sweep" to "Vector Sweep",
+        "ml_26_shape_morph" to "Shape Morph",
+        "ml_27_gradient_wipe" to "Gradient Wipe",
+        "ml_28_orbiting_dashes" to "Orbiting Dashes",
+        "ml_29_modular_assembly" to "Modular Assembly",
+        "ml_30_contour_flow" to "Contour Flow",
+        "ml_31_radial_burst" to "Radial Burst",
+        "ml_32_mughal_arch" to "Mughal Arch",
+        "ml_33_ukiyo_e_wave" to "Ukiyo-e Wave",
+        "ml_34_greek_marble" to "Greek Marble",
+        "ml_35_egyptian_sun_lotus" to "Egyptian Sun Lotus",
+        "ml_36_persian_star_tile" to "Persian Star Tile",
+        "ml_37_renaissance_astrolabe" to "Renaissance Astrolabe",
+        "ml_38_star_catcher" to "Star Catcher",
+        "ml_39_the_key" to "The Key",
+        "ml_40_koi_circuit" to "Koi Circuit",
+        "ml_41_bloom_dial" to "Bloom Dial",
+        "ml_42_cassette_target" to "Cassette Target",
+        "ml_43_moon_diver" to "Moon Diver",
+        "ml_44_north" to "North",
+        "ml_45_portal_window" to "Portal Window",
+        "ml_46_tea_steam" to "Tea Steam",
+        "ml_47_pendulum" to "Pendulum",
+        "ml_48_floating_petal" to "Floating Petal",
+        "ml_49_jellyfish" to "Jellyfish",
+        "ml_50_rain_on_leaf" to "Rain on Leaf",
+        "ml_51_moon_cloud" to "Moon Cloud",
+        "ml_52_firefly" to "Firefly",
+        "ml_53_fountain_ripple" to "Fountain Ripple",
+    )
+
     private val configsCache = HashMap<String, InteractiveWallpaperConfig>()
 
     /**
@@ -114,6 +170,9 @@ object InteractiveWallpaperRegistry {
                 Pair(EngineFamily.MINIMAL_ZEN, arch)
             }
 
+            // Motion Loops
+            presetId.startsWith("ml_") -> Pair(EngineFamily.MOTION_LOOPS, presetId)
+
             // Bold Chromatics & Op-Art
             presetId.startsWith("chroma_opart_") -> Pair(EngineFamily.BOLD_CHROMATIC, "kinetic_op_art")
             presetId.startsWith("chroma_glitch_") -> Pair(EngineFamily.BOLD_CHROMATIC, "chromatic_glitch")
@@ -134,6 +193,11 @@ object InteractiveWallpaperRegistry {
             EngineFamily.BIOLUMINESCENT_NATURE -> listOf(ColorPalette.ENCHANTED_FOREST, ColorPalette.SAKURA_MIST, ColorPalette.ABYSS_JELLYFISH, ColorPalette.MATRIX_EMERALD)[(hash % 4).toInt()]
             EngineFamily.MINIMAL_ZEN -> listOf(ColorPalette.ZEN_TWILIGHT, ColorPalette.SAKURA_MIST, ColorPalette.SACRED_GOLD, ColorPalette.LIQUID_CHROME)[(hash % 4).toInt()]
             EngineFamily.BOLD_CHROMATIC -> listOf(ColorPalette.PRISMATIC_OP, ColorPalette.SYNTHWAVE_SUNSET, ColorPalette.CYBER_NEON, ColorPalette.SOLAR_CORONA)[(hash % 4).toInt()]
+            EngineFamily.MOTION_LOOPS -> listOf(
+                ColorPalette.CYBER_NEON, ColorPalette.ZEN_TWILIGHT, ColorPalette.SACRED_GOLD,
+                ColorPalette.LIQUID_CHROME, ColorPalette.DEEP_NEBULA, ColorPalette.ENCHANTED_FOREST,
+                ColorPalette.PRISMATIC_OP, ColorPalette.TOKYO_NIGHT, ColorPalette.SAKURA_MIST
+            )[(hash % 9).toInt()]
         }
 
         // 3. Tailor interaction type to archetype
@@ -207,6 +271,13 @@ object InteractiveWallpaperRegistry {
     }
 
     private fun generateEvocativeTitle(presetId: String, family: EngineFamily, archetype: String): String {
+        if (family == EngineFamily.MOTION_LOOPS) {
+            val titleFromMap = MOTION_LOOP_TITLES[presetId]
+            if (titleFromMap != null) return titleFromMap
+            val clean = presetId.removePrefix("ml_")
+            val titlePart = if (clean.length > 3 && clean[2] == '_') clean.substring(3) else clean
+            return titlePart.split("_").joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } }
+        }
         val parts = presetId.split("_")
         val num = parts.lastOrNull()?.toIntOrNull() ?: 1
         val numRoman = when (num % 10) {

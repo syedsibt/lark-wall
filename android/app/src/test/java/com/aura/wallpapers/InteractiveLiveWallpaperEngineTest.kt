@@ -62,4 +62,17 @@ class InteractiveLiveWallpaperEngineTest {
         assertTrue(InteractiveWallpaperConfig.isInteractiveUri(uri))
         assertEquals("cyber_matrix_42", InteractiveWallpaperConfig.extractPresetId(uri))
     }
+
+    @Test
+    fun `verify motion loops family and all 53 titles are resolved deterministically`() {
+        val aurora = InteractiveWallpaperRegistry.getConfig("ml_01_aurora_drift")
+        assertEquals(EngineFamily.MOTION_LOOPS, aurora.family)
+        assertEquals("ml_01_aurora_drift", aurora.archetype)
+        assertEquals("Aurora Drift", aurora.title)
+
+        val ripple = InteractiveWallpaperRegistry.getConfig("ml_53_fountain_ripple")
+        assertEquals(EngineFamily.MOTION_LOOPS, ripple.family)
+        assertEquals("ml_53_fountain_ripple", ripple.archetype)
+        assertEquals("Fountain Ripple", ripple.title)
+    }
 }

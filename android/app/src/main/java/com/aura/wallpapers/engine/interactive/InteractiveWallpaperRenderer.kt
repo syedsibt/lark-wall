@@ -35,6 +35,7 @@ class InteractiveWallpaperRenderer(
     private val ripplePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.STROKE
     }
+    private val motionLoopsPipeline = MotionLoopsPipeline()
 
     // Touch & Interactive State
     private var touchX: Float = -1f
@@ -202,6 +203,18 @@ class InteractiveWallpaperRenderer(
             EngineFamily.BIOLUMINESCENT_NATURE -> drawNaturePipeline(canvas, dt)
             EngineFamily.MINIMAL_ZEN -> drawMinimalPipeline(canvas, dt)
             EngineFamily.BOLD_CHROMATIC -> drawChromaticPipeline(canvas, dt)
+            EngineFamily.MOTION_LOOPS -> motionLoopsPipeline.render(
+                canvas,
+                config.archetype,
+                simulationTime,
+                dt,
+                width,
+                height,
+                touchX,
+                touchY,
+                isTouching,
+                config.palette
+            )
         }
 
         // 3. Draw Touch Trail Glow if active

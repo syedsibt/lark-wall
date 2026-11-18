@@ -7,7 +7,8 @@ enum class EngineFamily(val displayName: String) {
     CELESTIAL_SPACE("Celestial & Deep Space"),
     BIOLUMINESCENT_NATURE("Bioluminescent Nature"),
     MINIMAL_ZEN("Minimal & Zen Harmonic"),
-    BOLD_CHROMATIC("Bold Chromatics & Op-Art")
+    BOLD_CHROMATIC("Bold Chromatics & Op-Art"),
+    MOTION_LOOPS("Motion Loops")
 }
 
 enum class InteractionType(val label: String) {

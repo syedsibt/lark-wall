@@ -405,5 +405,16 @@
     "isLive": true,
     "displayOrder": 37,
     "wallpaperCount": 66
+  },
+  {
+    "id": "c0000038-0000-0000-0000-000000000038",
+    "name": "Motion Loops",
+    "slug": "motion-loops",
+    "description": "Seamless, battery-efficient motion loops featuring futuristic geometry, heritage art, and serene natural subjects.",
+    "iconName": "all_inclusive",
+    "coverImageUrl": "asset:///live_thumbnails/interactive/ml_01_aurora_drift.webp",
+    "isLive": true,
+    "displayOrder": 28,
+    "wallpaperCount": 53
   }
 ]
