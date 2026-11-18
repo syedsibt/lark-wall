@@ -25,8 +25,7 @@ class LiveWallpaperRepositoryImpl @Inject constructor(
 ) : LiveWallpaperRepository {
 
     override fun getPopularLiveWallpapers(page: Int): Flow<List<LiveWallpaper>> {
-        val offset = page * Constants.PAGE_SIZE
-        return wallpaperDao.getPopularLiveWallpapers(Constants.PAGE_SIZE, offset)
+        return wallpaperDao.getAllLiveWallpapers()
             .combine(favoriteDao.getAllFavorites()) { entities, favorites ->
                 val favIds = favorites.map { it.assetId }.toSet()
                 entities.map { it.toDomain(isFavorite = favIds.contains(it.id)) }
@@ -34,8 +33,7 @@ class LiveWallpaperRepositoryImpl @Inject constructor(
     }
 
     override fun getLiveWallpapersByCategory(categoryId: String, page: Int): Flow<List<LiveWallpaper>> {
-        val offset = page * Constants.PAGE_SIZE
-        return wallpaperDao.getLiveWallpapersByCategory(categoryId, Constants.PAGE_SIZE, offset)
+        return wallpaperDao.getAllLiveWallpapersByCategory(categoryId)
             .combine(favoriteDao.getAllFavorites()) { entities, favorites ->
                 val favIds = favorites.map { it.assetId }.toSet()
                 entities.map { it.toDomain(isFavorite = favIds.contains(it.id)) }

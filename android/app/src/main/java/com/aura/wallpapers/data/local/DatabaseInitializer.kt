@@ -32,8 +32,8 @@ class DatabaseInitializer @Inject constructor(
         initMutex.withLock {
             try {
                 val prefs = context.getSharedPreferences("aura_catalog_prefs", Context.MODE_PRIVATE)
-                val hasLoadedInteractiveV9 = prefs.getBoolean("catalog_interactive_live_v9", false)
-                if (hasLoadedInteractiveV9) {
+                val hasLoadedInteractiveV11 = prefs.getBoolean("catalog_interactive_live_v11_pure", false)
+                if (hasLoadedInteractiveV11) {
                     // Already populated, skip disk I/O entirely for instant startup
                     return@withContext
                 }
@@ -68,13 +68,14 @@ class DatabaseInitializer @Inject constructor(
                             val type = object : TypeToken<List<LiveWallpaperEntity>>() {}.type
                             val liveWallpapers: List<LiveWallpaperEntity> = gson.fromJson(reader, type)
                             if (!liveWallpapers.isNullOrEmpty()) {
+                                wallpaperDao.clearLiveWallpapers()
                                 wallpaperDao.insertLiveWallpapers(liveWallpapers)
                             }
                         }
                     }
                 }
 
-                prefs.edit().putBoolean("catalog_interactive_live_v9", true).commit()
+                prefs.edit().putBoolean("catalog_interactive_live_v11_pure", true).commit()
             } catch (e: Exception) {
                 e.printStackTrace()
             }
