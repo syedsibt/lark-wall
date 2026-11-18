@@ -309,69 +309,69 @@
   },
   {
     "id": "c0000029-0000-0000-0000-000000000029",
-    "name": "Live Nature",
+    "name": "Live Nature & Bioluminescence",
     "slug": "live-nature",
     "description": "Subtle swaying foliage, cascading waterfalls, and rolling mist.",
     "iconName": "play_circle",
     "coverImageUrl": "https://images.unsplash.com/photo-1473448912268-2022ce9509d8?w=600&auto=format&fit=crop&q=80",
     "isLive": true,
     "displayOrder": 29,
-    "wallpaperCount": 40
+    "wallpaperCount": 70
   },
   {
     "id": "c0000030-0000-0000-0000-000000000030",
-    "name": "Live Space",
+    "name": "Live Celestial & Space",
     "slug": "live-space",
     "description": "Slowly orbiting planets, pulsating pulsars, and drifting stars.",
     "iconName": "play_circle",
     "coverImageUrl": "https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=600&auto=format&fit=crop&q=80",
     "isLive": true,
     "displayOrder": 30,
-    "wallpaperCount": 40
+    "wallpaperCount": 76
   },
   {
     "id": "c0000031-0000-0000-0000-000000000031",
-    "name": "Live Abstract",
+    "name": "Live Abstract Geometry",
     "slug": "live-abstract",
     "description": "Fluid liquid simulations, shifting chromatic ribbons, and particle swarms.",
     "iconName": "play_circle",
     "coverImageUrl": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&auto=format&fit=crop&q=80",
     "isLive": true,
     "displayOrder": 31,
-    "wallpaperCount": 40
+    "wallpaperCount": 80
   },
   {
     "id": "c0000032-0000-0000-0000-000000000032",
-    "name": "Live Motion",
+    "name": "Live Minimal & Zen",
     "slug": "live-motion",
     "description": "Kinetic typography, sleek cybernetic lines, and ambient light loops.",
     "iconName": "play_circle",
     "coverImageUrl": "https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&auto=format&fit=crop&q=80",
     "isLive": true,
     "displayOrder": 32,
-    "wallpaperCount": 40
+    "wallpaperCount": 62
   },
   {
     "id": "c0000033-0000-0000-0000-000000000033",
-    "name": "Live Liquid Chrome",
+    "name": "Live Liquid Chrome & Fluid",
     "slug": "live-chrome",
     "description": "Seamless 60fps rippling molten chrome, undulating mercury waves, and cybernetic fluid simulations.",
     "iconName": "play_circle",
     "coverImageUrl": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&auto=format&fit=crop&q=80",
     "isLive": true,
     "displayOrder": 33,
-    "wallpaperCount": 40
+    "wallpaperCount": 76
   },
   {
     "id": "c0000034-0000-0000-0000-000000000034",
-    "name": "Live Tokyo Lo-Fi & Cyber",
+    "name": "Live Cyberpunk & Neon",
     "slug": "live-lofi",
     "description": "Seamless 60fps rainy Tokyo neon streets, cyberpunk raindrops on glass, and glowing night city mist.",
     "iconName": "play_circle",
     "coverImageUrl": "https://images.unsplash.com/photo-1514565131-fce0801e5785?w=600&auto=format&fit=crop&q=80",
     "isLive": true,
     "displayOrder": 34,
-    "wallpaperCount": 40
+    "wallpaperCount": 82
   },
   {
     "id": "c0000035-0000-0000-0000-000000000035",
@@ -397,13 +397,13 @@
   },
   {
     "id": "c0000037-0000-0000-0000-000000000037",
-    "name": "Live Anime & Toons",
+    "name": "Live Bold Chromatics & Op-Art",
     "slug": "live-anime-toons",
     "description": "High-voltage Saiyan energy halos, Chidori spark arcs, glowing manga auras, and animated cartoon loops.",
     "iconName": "play_circle",
     "coverImageUrl": "https://images.unsplash.com/photo-1563245372-f21724e3856d?w=600&auto=format&fit=crop&q=80",
     "isLive": true,
     "displayOrder": 37,
-    "wallpaperCount": 40
+    "wallpaperCount": 66
   }
 ]

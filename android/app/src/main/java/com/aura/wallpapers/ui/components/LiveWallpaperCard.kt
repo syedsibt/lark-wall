@@ -108,22 +108,23 @@ fun LiveWallpaperCard(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    val isInteractive = liveWallpaper.codec == "engine/interactive" || liveWallpaper.previewVideoUrl.startsWith("engine://interactive")
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(9999.dp))
-                            .background(Color.Black.copy(alpha = 0.5f))
+                            .background(if (isInteractive) WallixaPrimary.copy(alpha = 0.75f) else Color.Black.copy(alpha = 0.5f))
                             .padding(horizontal = 7.dp, vertical = 2.dp)
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
-                                imageVector = Icons.Filled.Speed,
+                                imageVector = if (isInteractive) Icons.Filled.MotionPhotosOn else Icons.Filled.Speed,
                                 contentDescription = null,
-                                tint = WallixaAccentLavender,
+                                tint = if (isInteractive) Color.White else WallixaAccentLavender,
                                 modifier = Modifier.size(11.dp)
                             )
                             Spacer(modifier = Modifier.width(3.dp))
                             Text(
-                                text = "60 FPS",
+                                text = if (isInteractive) "Touch 60FPS" else "60 FPS",
                                 color = Color.White,
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold

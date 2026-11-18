@@ -8,6 +8,8 @@ import com.aura.wallpapers.domain.repository.LiveWallpaperRepository
 import com.aura.wallpapers.domain.repository.SettingsRepository
 import com.aura.wallpapers.engine.AuraLiveWallpaperService
 import com.aura.wallpapers.engine.LiveWallpaperManager
+import com.aura.wallpapers.engine.interactive.InteractiveWallpaperConfig
+import com.aura.wallpapers.util.Constants
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -23,6 +25,38 @@ class PrepareLiveWallpaperUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(liveWallpaper: LiveWallpaper): Result<Unit> = withContext(Dispatchers.IO) {
         runCatching {
+            val prefs = context.getSharedPreferences("aura_engine_prefs", Context.MODE_PRIVATE)
+
+            // Branch 1: Interactive Procedural Live Wallpaper
+            if (InteractiveWallpaperConfig.isInteractiveUri(liveWallpaper.originalVideoUrl) || liveWallpaper.codec == "engine/interactive") {
+                val presetId = InteractiveWallpaperConfig.extractPresetId(liveWallpaper.originalVideoUrl)
+
+                prefs.edit()
+                    .putString(Constants.PREF_KEY_ACTIVE_LIVE_MODE, "interactive")
+                    .putString(Constants.PREF_KEY_ACTIVE_LIVE_PRESET_ID, presetId)
+                    .putString(Constants.PREF_KEY_ACTIVE_LIVE_WALLPAPER_TITLE, liveWallpaper.title)
+                    .apply()
+
+                settingsRepository.setActiveLiveWallpaper("engine://interactive/$presetId", liveWallpaper.title)
+
+                val updateIntent = Intent(AuraLiveWallpaperService.ACTION_UPDATE_LIVE_WALLPAPER).apply {
+                    putExtra("mode", "interactive")
+                    putExtra("preset_id", presetId)
+                    putExtra("video_title", liveWallpaper.title)
+                    setPackage(context.packageName)
+                }
+                context.sendBroadcast(updateIntent)
+
+                LiveWallpaperManager.openLiveWallpaperPreview(context).getOrThrow()
+                liveWallpaperRepository.incrementDownload(liveWallpaper.id)
+                return@runCatching
+            }
+
+            // Branch 2: Video Live Wallpaper
+            prefs.edit()
+                .putString(Constants.PREF_KEY_ACTIVE_LIVE_MODE, "video")
+                .apply()
+
             val liveDir = File(context.filesDir, "active_live_wallpaper").apply { mkdirs() }
             val safeId = liveWallpaper.id.replace(Regex("[^a-zA-Z0-9_-]"), "_")
             val targetFile = File(liveDir, "live_${safeId}.mp4")
@@ -34,7 +68,7 @@ class PrepareLiveWallpaperUseCase @Inject constructor(
                 runCatching { context.assets.openFd(assetPath).use { it.length } }.getOrDefault(-1L)
             } else -1L
 
-            // 1. Extract or copy to a guaranteed local storage file on device if not already cached or if size mismatched
+            // Extract or copy to a guaranteed local storage file on device if not already cached or if size mismatched
             if (!targetFile.exists() || targetFile.length() < 1024L || (expectedLength > 0L && targetFile.length() != expectedLength)) {
                 val tempFile = File(liveDir, "live_${safeId}.tmp")
                 if (rawUrl.startsWith("asset:///")) {
@@ -81,21 +115,22 @@ class PrepareLiveWallpaperUseCase @Inject constructor(
 
             val savedPath = targetFile.absolutePath
 
-            // 2. Persist active live wallpaper path in settings and shared preferences
+            // Persist active live wallpaper path in settings and shared preferences
             settingsRepository.setActiveLiveWallpaper(savedPath, liveWallpaper.title)
 
-            // 3. Broadcast notification to hot-reload AuraLiveWallpaperService if already active on screen
+            // Broadcast notification to hot-reload AuraLiveWallpaperService if already active on screen
             val updateIntent = Intent(AuraLiveWallpaperService.ACTION_UPDATE_LIVE_WALLPAPER).apply {
+                putExtra("mode", "video")
                 putExtra("video_path", savedPath)
                 putExtra("video_title", liveWallpaper.title)
                 setPackage(context.packageName)
             }
             context.sendBroadcast(updateIntent)
 
-            // 4. Launch Android native Live Wallpaper system preview chooser
+            // Launch Android native Live Wallpaper system preview chooser
             LiveWallpaperManager.openLiveWallpaperPreview(context).getOrThrow()
 
-            // 5. Increment atomic download count
+            // Increment atomic download count
             liveWallpaperRepository.incrementDownload(liveWallpaper.id)
         }
     }

@@ -135,7 +135,7 @@ fun LiveWallpapersScreen(
         }
 
         // Horizontal Filter Chips
-        val filterTags = listOf("All", "Nature", "Abstract", "Anime", "4K", "Space", "Cyber")
+        val filterTags = listOf("All", "Cyber", "Geometry", "Fluid", "Space", "Nature", "Minimal", "Chromatic")
         var selectedTag by remember { mutableStateOf("All") }
 
         LazyRow(

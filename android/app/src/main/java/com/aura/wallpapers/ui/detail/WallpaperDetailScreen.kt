@@ -96,6 +96,9 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.aura.wallpapers.R
 import com.aura.wallpapers.domain.model.ApplyTarget
+import com.aura.wallpapers.engine.interactive.InteractiveWallpaperComposable
+import com.aura.wallpapers.engine.interactive.InteractiveWallpaperConfig
+import com.aura.wallpapers.engine.interactive.InteractiveWallpaperRegistry
 import com.aura.wallpapers.ui.theme.WallixaAccentLavender
 import com.aura.wallpapers.ui.theme.WallixaPrimary
 import com.aura.wallpapers.ui.theme.WallixaPrimaryContainer
@@ -153,92 +156,101 @@ fun WallpaperDetailScreen(
                 }
             }
     ) {
-        // 1. Immersive Full-Bleed Media (Static image or Media3 live loop)
+        // 1. Immersive Full-Bleed Media (Interactive Procedural, Video loop, or Static image)
         if (uiState.isLive && uiState.liveWallpaper != null) {
             val live = uiState.liveWallpaper!!
 
-            // Fallback crisp thumbnail while video buffers
-            AsyncImage(
-                model = ImageRequest.Builder(context)
-                    .data(live.thumbnailUrl)
-                    .crossfade(true)
-                    .build(),
-                contentDescription = live.title,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize()
-            )
+            if (InteractiveWallpaperConfig.isInteractiveUri(live.previewVideoUrl) || live.codec == "engine/interactive") {
+                val presetId = InteractiveWallpaperConfig.extractPresetId(live.previewVideoUrl)
+                val config = remember(presetId) { InteractiveWallpaperRegistry.getConfig(presetId) }
+                InteractiveWallpaperComposable(
+                    config = config,
+                    modifier = Modifier.fillMaxSize()
+                )
+            } else {
+                // Fallback crisp thumbnail while video buffers
+                AsyncImage(
+                    model = ImageRequest.Builder(context)
+                        .data(live.thumbnailUrl)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = live.title,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
 
-            // Video player with TextureView for zero-glitch Compose rendering
-            val exoPlayer = remember(live.id, live.previewVideoUrl) {
-                val uri = if (live.previewVideoUrl.startsWith("asset:///")) {
-                    val assetPath = live.previewVideoUrl.removePrefix("asset:///")
-                    val cacheFile = File(context.cacheDir, "preview_${File(assetPath).name}")
-                    val expectedLength = runCatching {
-                        context.assets.openFd(assetPath).use { it.length }
-                    }.getOrDefault(-1L)
+                // Video player with TextureView for zero-glitch Compose rendering
+                val exoPlayer = remember(live.id, live.previewVideoUrl) {
+                    val uri = if (live.previewVideoUrl.startsWith("asset:///")) {
+                        val assetPath = live.previewVideoUrl.removePrefix("asset:///")
+                        val cacheFile = File(context.cacheDir, "preview_${File(assetPath).name}")
+                        val expectedLength = runCatching {
+                            context.assets.openFd(assetPath).use { it.length }
+                        }.getOrDefault(-1L)
 
-                    if (!cacheFile.exists() || cacheFile.length() == 0L || (expectedLength > 0L && cacheFile.length() != expectedLength)) {
-                        runCatching {
-                            context.assets.open(assetPath).use { input ->
-                                FileOutputStream(cacheFile).use { output ->
-                                    input.copyTo(output)
+                        if (!cacheFile.exists() || cacheFile.length() == 0L || (expectedLength > 0L && cacheFile.length() != expectedLength)) {
+                            runCatching {
+                                context.assets.open(assetPath).use { input ->
+                                    FileOutputStream(cacheFile).use { output ->
+                                        input.copyTo(output)
+                                    }
                                 }
                             }
                         }
-                    }
-                    if (cacheFile.exists() && cacheFile.length() > 0L) {
-                        Uri.fromFile(cacheFile)
+                        if (cacheFile.exists() && cacheFile.length() > 0L) {
+                            Uri.fromFile(cacheFile)
+                        } else {
+                            Uri.parse(live.previewVideoUrl)
+                        }
                     } else {
                         Uri.parse(live.previewVideoUrl)
                     }
-                } else {
-                    Uri.parse(live.previewVideoUrl)
-                }
 
-                ExoPlayer.Builder(context).build().apply {
-                    repeatMode = Player.REPEAT_MODE_ALL
-                    volume = 0f
-                    videoScalingMode = C.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING
-                    setMediaItem(MediaItem.fromUri(uri))
-                    prepare()
-                    playWhenReady = true
-                }
-            }
-
-            val lifecycleOwner = LocalLifecycleOwner.current
-            DisposableEffect(lifecycleOwner, exoPlayer) {
-                val observer = LifecycleEventObserver { _, event ->
-                    when (event) {
-                        Lifecycle.Event.ON_RESUME -> {
-                            exoPlayer.play()
-                        }
-                        Lifecycle.Event.ON_PAUSE -> {
-                            exoPlayer.pause()
-                        }
-                        else -> {}
+                    ExoPlayer.Builder(context).build().apply {
+                        repeatMode = Player.REPEAT_MODE_ALL
+                        volume = 0f
+                        videoScalingMode = C.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING
+                        setMediaItem(MediaItem.fromUri(uri))
+                        prepare()
+                        playWhenReady = true
                     }
                 }
-                lifecycleOwner.lifecycle.addObserver(observer)
-                onDispose {
-                    lifecycleOwner.lifecycle.removeObserver(observer)
-                    exoPlayer.stop()
-                    exoPlayer.release()
-                }
-            }
 
-            AndroidView(
-                factory = { ctx ->
-                    val view = LayoutInflater.from(ctx).inflate(R.layout.view_exo_player, null, false) as PlayerView
-                    view.player = exoPlayer
-                    view
-                },
-                update = { view ->
-                    if (view.player != exoPlayer) {
+                val lifecycleOwner = LocalLifecycleOwner.current
+                DisposableEffect(lifecycleOwner, exoPlayer) {
+                    val observer = LifecycleEventObserver { _, event ->
+                        when (event) {
+                            Lifecycle.Event.ON_RESUME -> {
+                                exoPlayer.play()
+                            }
+                            Lifecycle.Event.ON_PAUSE -> {
+                                exoPlayer.pause()
+                            }
+                            else -> {}
+                        }
+                    }
+                    lifecycleOwner.lifecycle.addObserver(observer)
+                    onDispose {
+                        lifecycleOwner.lifecycle.removeObserver(observer)
+                        exoPlayer.stop()
+                        exoPlayer.release()
+                    }
+                }
+
+                AndroidView(
+                    factory = { ctx ->
+                        val view = LayoutInflater.from(ctx).inflate(R.layout.view_exo_player, null, false) as PlayerView
                         view.player = exoPlayer
-                    }
-                },
-                modifier = Modifier.fillMaxSize()
-            )
+                        view
+                    },
+                    update = { view ->
+                        if (view.player != exoPlayer) {
+                            view.player = exoPlayer
+                        }
+                    },
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
         } else if (uiState.wallpaper != null) {
             AsyncImage(
                 model = ImageRequest.Builder(context)
@@ -495,8 +507,11 @@ fun WallpaperDetailScreen(
                             Column {
                                 Text(text = "Engine / Codec", color = WallixaPrimary, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
                                 Spacer(modifier = Modifier.height(2.dp))
+                                val isInteractive = uiState.isLive && uiState.liveWallpaper?.let {
+                                    InteractiveWallpaperConfig.isInteractiveUri(it.previewVideoUrl) || it.codec == "engine/interactive"
+                                } == true
                                 Text(
-                                    text = if (uiState.isLive) "Media3 H.264 60FPS" else "True 4K Ultra HD",
+                                    text = if (uiState.isLive) (if (isInteractive) "Procedural Interactive 60FPS" else "Media3 H.264 60FPS") else "True 4K Ultra HD",
                                     color = MaterialTheme.colorScheme.onSurface,
                                     fontSize = 13.sp,
                                     fontWeight = FontWeight.Bold
@@ -555,8 +570,11 @@ fun WallpaperDetailScreen(
                         Spacer(modifier = Modifier.width(6.dp))
                         val resolution = uiState.wallpaper?.resolutionLabel ?: uiState.liveWallpaper?.resolutionLabel ?: "3840×2160"
                         val size = uiState.wallpaper?.formattedSize ?: uiState.liveWallpaper?.formattedSize ?: "4.2 MB"
+                        val isInteractive = uiState.isLive && uiState.liveWallpaper?.let {
+                            InteractiveWallpaperConfig.isInteractiveUri(it.previewVideoUrl) || it.codec == "engine/interactive"
+                        } == true
                         Text(
-                            text = if (uiState.isLive) "Live 60 FPS • Seamless Loop • OLED Optimized" else "4K Ultra HD • $resolution • $size • OLED",
+                            text = if (uiState.isLive) (if (isInteractive) "✨ Touch Interactive • 60 FPS • 0% Idle Battery" else "Live 60 FPS • Seamless Loop • OLED Optimized") else "4K Ultra HD • $resolution • $size • OLED",
                             color = Color.White,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Medium

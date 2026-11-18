@@ -22,6 +22,8 @@ object Constants {
     // Engine preferences
     const val PREF_KEY_ACTIVE_LIVE_WALLPAPER_PATH = "pref_active_live_wallpaper_path"
     const val PREF_KEY_ACTIVE_LIVE_WALLPAPER_TITLE = "pref_active_live_wallpaper_title"
+    const val PREF_KEY_ACTIVE_LIVE_MODE = "pref_active_live_mode"
+    const val PREF_KEY_ACTIVE_LIVE_PRESET_ID = "pref_active_live_preset_id"
     const val PREF_KEY_BATTERY_SAVER_ENABLED = "pref_battery_saver_enabled"
     const val PREF_KEY_WIFI_ONLY = "pref_wifi_only"
     const val PREF_KEY_THEME_MODE = "pref_theme_mode"
