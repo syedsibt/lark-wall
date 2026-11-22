@@ -23,7 +23,7 @@ import com.aura.wallpapers.data.local.entity.WallpaperEntity
         DownloadEntity::class,
         SearchHistoryEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class AuraDatabase : RoomDatabase() {

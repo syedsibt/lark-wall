@@ -78,12 +78,12 @@ class UserPreferencesManager @Inject constructor(
             prefs[keyActiveLivePath] = path
             prefs[keyActiveLiveTitle] = title
         }
-        // Also write synchronously to standard SharedPreferences for instant access in WallpaperService
+        // Also write asynchronously to standard SharedPreferences for instant access in WallpaperService
         val legacyPrefs = context.getSharedPreferences("aura_engine_prefs", Context.MODE_PRIVATE)
         legacyPrefs.edit()
             .putString(Constants.PREF_KEY_ACTIVE_LIVE_WALLPAPER_PATH, path)
             .putString(Constants.PREF_KEY_ACTIVE_LIVE_WALLPAPER_TITLE, title)
-            .commit()
+            .apply()
     }
 
     suspend fun setGoogleUser(email: String, name: String, photoUrl: String? = null) {

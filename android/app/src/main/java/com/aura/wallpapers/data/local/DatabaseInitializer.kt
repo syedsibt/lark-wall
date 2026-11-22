@@ -33,7 +33,9 @@ class DatabaseInitializer @Inject constructor(
             try {
                 val prefs = context.getSharedPreferences("aura_catalog_prefs", Context.MODE_PRIVATE)
                 val hasLoadedMotionLoops = prefs.getBoolean("catalog_interactive_live_v12_motionloops", false)
-                if (hasLoadedMotionLoops) {
+                val wpCount = wallpaperDao.getWallpaperCount()
+                val liveCount = wallpaperDao.getLiveWallpaperCount()
+                if (hasLoadedMotionLoops && wpCount > 0 && liveCount > 0) {
                     // Already populated, skip disk I/O entirely for instant startup
                     return@withContext
                 }

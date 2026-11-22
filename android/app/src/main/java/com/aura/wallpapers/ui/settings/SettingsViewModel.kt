@@ -86,10 +86,10 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
-    fun signInWithGoogle(email: String = "syedsibt@gmail.com", name: String = "Syed Sibt") {
+    fun signInWithGoogle(email: String = "user@example.com", name: String = "User") {
         viewModelScope.launch {
             _uiState.update { it.copy(isSigningIn = true) }
-            kotlinx.coroutines.delay(500)
+            kotlinx.coroutines.delay(300)
             settingsRepository.setGoogleUser(email, name)
             _uiState.update {
                 it.copy(

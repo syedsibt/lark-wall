@@ -10,10 +10,12 @@ import com.aura.wallpapers.domain.repository.LiveWallpaperRepository
 import com.aura.wallpapers.domain.repository.WallpaperRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
@@ -84,20 +86,32 @@ class SearchViewModel @Inject constructor(
         _uiState.update { it.copy(activeFilter = filter) }
     }
 
-    fun executeSearch(query: String) {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isSearching = true) }
-            searchDao.insertSearchQuery(SearchHistoryEntity(query.trim()))
+    private var searchJob: Job? = null
 
-            wallpaperRepository.searchWallpapers(query).collect { staticList ->
-                liveWallpaperRepository.searchLiveWallpapers(query).collect { liveList ->
-                    _uiState.update {
-                        it.copy(
-                            isSearching = false,
-                            staticResults = staticList,
-                            liveResults = liveList
-                        )
-                    }
+    fun executeSearch(query: String) {
+        val trimmed = query.trim()
+        if (trimmed.isBlank()) {
+            _uiState.update { it.copy(isSearching = false, staticResults = emptyList(), liveResults = emptyList()) }
+            return
+        }
+
+        searchJob?.cancel()
+        searchJob = viewModelScope.launch {
+            _uiState.update { it.copy(isSearching = true) }
+            searchDao.insertSearchQuery(SearchHistoryEntity(trimmed))
+
+            combine(
+                wallpaperRepository.searchWallpapers(trimmed),
+                liveWallpaperRepository.searchLiveWallpapers(trimmed)
+            ) { staticList, liveList ->
+                Pair(staticList, liveList)
+            }.collect { (staticList, liveList) ->
+                _uiState.update {
+                    it.copy(
+                        isSearching = false,
+                        staticResults = staticList,
+                        liveResults = liveList
+                    )
                 }
             }
         }

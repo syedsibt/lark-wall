@@ -1,10 +1,19 @@
 package com.aura.wallpapers.data.local.entity
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.aura.wallpapers.domain.model.Wallpaper
 
-@Entity(tableName = "wallpapers")
+@Entity(
+    tableName = "wallpapers",
+    indices = [
+        Index(value = ["categoryId"]),
+        Index(value = ["downloadCount"]),
+        Index(value = ["isFeatured"]),
+        Index(value = ["cachedAt"])
+    ]
+)
 data class WallpaperEntity(
     @PrimaryKey val id: String,
     val title: String,

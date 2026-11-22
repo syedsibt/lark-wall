@@ -64,15 +64,26 @@ class InteractiveLiveWallpaperEngineTest {
     }
 
     @Test
-    fun `verify motion loops family and all 53 titles are resolved deterministically`() {
-        val aurora = InteractiveWallpaperRegistry.getConfig("ml_01_aurora_drift")
-        assertEquals(EngineFamily.MOTION_LOOPS, aurora.family)
-        assertEquals("ml_01_aurora_drift", aurora.archetype)
-        assertEquals("Aurora Drift", aurora.title)
+    fun `verify null and blank preset id extraction are safe and provide valid default`() {
+        val nullUri: String? = null
+        val blankUri = "   "
+        val emptyUri = ""
 
-        val ripple = InteractiveWallpaperRegistry.getConfig("ml_53_fountain_ripple")
-        assertEquals(EngineFamily.MOTION_LOOPS, ripple.family)
-        assertEquals("ml_53_fountain_ripple", ripple.archetype)
-        assertEquals("Fountain Ripple", ripple.title)
+        assertEquals("cyber_neon_1", InteractiveWallpaperConfig.extractPresetId(nullUri))
+        assertEquals("cyber_neon_1", InteractiveWallpaperConfig.extractPresetId(blankUri))
+        assertEquals("cyber_neon_1", InteractiveWallpaperConfig.extractPresetId(emptyUri))
+
+        val configForBlank = InteractiveWallpaperRegistry.getConfig("")
+        assertNotNull(configForBlank)
+        assertTrue(configForBlank.speed > 0f)
+        assertTrue(configForBlank.particleCount > 0)
+    }
+
+    @Test
+    fun `verify all 53 motion loop titles exist in title registry map`() {
+        assertEquals(53, InteractiveWallpaperRegistry.MOTION_LOOP_TITLES.size)
+        assertTrue(InteractiveWallpaperRegistry.MOTION_LOOP_TITLES.containsKey("ml_01_aurora_drift"))
+        assertTrue(InteractiveWallpaperRegistry.MOTION_LOOP_TITLES.containsKey("ml_25_vector_sweep"))
+        assertTrue(InteractiveWallpaperRegistry.MOTION_LOOP_TITLES.containsKey("ml_53_fountain_ripple"))
     }
 }

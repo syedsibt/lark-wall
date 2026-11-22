@@ -52,17 +52,7 @@ class WallpaperDownloadWorker @AssistedInject constructor(
         }
 
         try {
-            val request = Request.Builder().url(downloadUrl).build()
-            val response = okHttpClient.newCall(request).execute()
-
-            if (!response.isSuccessful || response.body == null) {
-                markFailed(existing)
-                return@withContext Result.failure()
-            }
-
-            val body = response.body!!
-            val totalBytes = body.contentLength()
-
+            val safeFileName = fileName.replace(Regex("[^a-zA-Z0-9._-]"), "_")
             val targetDir = if (isLive) {
                 context.getExternalFilesDir(Environment.DIRECTORY_MOVIES) ?: context.filesDir
             } else {
@@ -70,31 +60,80 @@ class WallpaperDownloadWorker @AssistedInject constructor(
             }
             if (!targetDir.exists()) targetDir.mkdirs()
 
-            val targetFile = File(targetDir, fileName)
+            val targetFile = File(targetDir, safeFileName)
 
-            body.byteStream().use { inputStream ->
-                FileOutputStream(targetFile).use { outputStream ->
-                    val buffer = ByteArray(8192)
-                    var bytesRead: Int
-                    var totalRead = 0L
-                    var lastProgress = 0
-
-                    while (inputStream.read(buffer).also { bytesRead = it } != -1) {
-                        outputStream.write(buffer, 0, bytesRead)
-                        totalRead += bytesRead
-
-                        if (totalBytes > 0) {
-                            val progress = ((totalRead * 100) / totalBytes).toInt()
-                            if (progress != lastProgress && progress % 5 == 0) {
-                                lastProgress = progress
-                                updateProgress(notificationId, title, progress)
-                                if (existing != null) {
-                                    downloadDao.updateDownload(existing.copy(progress = progress))
-                                }
+            when {
+                downloadUrl.startsWith("asset:///") -> {
+                    val assetPath = downloadUrl.removePrefix("asset:///")
+                    context.assets.open(assetPath).use { input ->
+                        FileOutputStream(targetFile).use { output ->
+                            input.copyTo(output)
+                        }
+                    }
+                }
+                downloadUrl.startsWith("engine://") -> {
+                    // Export interactive wallpaper asset/thumbnail
+                    val presetId = com.aura.wallpapers.engine.interactive.InteractiveWallpaperConfig.extractPresetId(downloadUrl)
+                    val assetPath = "live_thumbnails/interactive/${presetId}.webp"
+                    val hasAsset = runCatching { context.assets.open(assetPath).close(); true }.getOrDefault(false)
+                    if (hasAsset) {
+                        context.assets.open(assetPath).use { input ->
+                            FileOutputStream(targetFile).use { output ->
+                                input.copyTo(output)
+                            }
+                        }
+                    } else {
+                        context.assets.open("live_videos/liquid_chrome_loop.mp4").use { input ->
+                            FileOutputStream(targetFile).use { output ->
+                                input.copyTo(output)
                             }
                         }
                     }
-                    outputStream.flush()
+                }
+                downloadUrl.startsWith("file://") -> {
+                    val localFile = File(downloadUrl.removePrefix("file://"))
+                    localFile.copyTo(targetFile, overwrite = true)
+                }
+                File(downloadUrl).exists() -> {
+                    File(downloadUrl).copyTo(targetFile, overwrite = true)
+                }
+                else -> {
+                    val request = Request.Builder().url(downloadUrl).build()
+                    val response = okHttpClient.newCall(request).execute()
+
+                    if (!response.isSuccessful || response.body == null) {
+                        markFailed(existing)
+                        return@withContext Result.failure()
+                    }
+
+                    val body = response.body!!
+                    val totalBytes = body.contentLength()
+
+                    body.byteStream().use { inputStream ->
+                        FileOutputStream(targetFile).use { outputStream ->
+                            val buffer = ByteArray(8192)
+                            var bytesRead: Int
+                            var totalRead = 0L
+                            var lastProgress = 0
+
+                            while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                                outputStream.write(buffer, 0, bytesRead)
+                                totalRead += bytesRead
+
+                                if (totalBytes > 0) {
+                                    val progress = ((totalRead * 100) / totalBytes).toInt()
+                                    if (progress != lastProgress && progress % 5 == 0) {
+                                        lastProgress = progress
+                                        updateProgress(notificationId, title, progress)
+                                        if (existing != null) {
+                                            downloadDao.updateDownload(existing.copy(progress = progress))
+                                        }
+                                    }
+                                }
+                            }
+                            outputStream.flush()
+                        }
+                    }
                 }
             }
 

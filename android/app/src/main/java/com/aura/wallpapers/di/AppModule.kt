@@ -44,7 +44,11 @@ object AppModule {
         val cache = Cache(cacheDir, 50L * 1024L * 1024L) // 50 MB HTTP response cache
 
         val logging = HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.BASIC
+            level = if (com.aura.wallpapers.BuildConfig.DEBUG) {
+                HttpLoggingInterceptor.Level.BASIC
+            } else {
+                HttpLoggingInterceptor.Level.NONE
+            }
         }
 
         return OkHttpClient.Builder()

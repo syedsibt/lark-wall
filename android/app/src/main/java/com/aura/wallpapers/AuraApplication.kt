@@ -31,6 +31,22 @@ class AuraApplication : Application(), Configuration.Provider, ImageLoaderFactor
     override fun newImageLoader(): ImageLoader {
         return ImageLoader.Builder(this)
             .okHttpClient(okHttpClient)
+            .components {
+                add(coil.map.Mapper<String, String> { data, _ ->
+                    if (data.startsWith("asset:///")) {
+                        "file:///android_asset/" + data.removePrefix("asset:///")
+                    } else {
+                        data
+                    }
+                })
+                add(coil.map.Mapper<android.net.Uri, android.net.Uri> { data, _ ->
+                    if (data.scheme == "asset") {
+                        android.net.Uri.parse("file:///android_asset/" + (data.path ?: "").trimStart('/'))
+                    } else {
+                        data
+                    }
+                })
+            }
             .allowRgb565(false) // Never degrade to 16-bit compressed colors
             .allowHardware(true) // High-performance GPU hardware bitmap rendering (zero heap GC pauses)
             .memoryCache {

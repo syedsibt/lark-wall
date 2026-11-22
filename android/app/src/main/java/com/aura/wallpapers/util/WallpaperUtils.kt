@@ -8,6 +8,7 @@ import android.os.Build
 import com.aura.wallpapers.domain.model.ApplyTarget
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.io.File
 import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
@@ -22,28 +23,62 @@ object WallpaperUtils {
         runCatching {
             val wallpaperManager = WallpaperManager.getInstance(context)
 
-            // Connect with high-bandwidth mobile headers
-            val conn = (URL(imageUrl).openConnection() as HttpURLConnection).apply {
-                connectTimeout = 15000
-                readTimeout = 25000
-                setRequestProperty("User-Agent", "Mozilla/5.0 (Android; Mobile; Lark Wall 4K)")
+            fun openStream(): InputStream {
+                return when {
+                    imageUrl.startsWith("asset:///") -> {
+                        val assetPath = imageUrl.removePrefix("asset:///")
+                        context.assets.open(assetPath)
+                    }
+                    imageUrl.startsWith("file://") -> {
+                        val path = imageUrl.removePrefix("file://")
+                        File(path).inputStream()
+                    }
+                    File(imageUrl).exists() -> {
+                        File(imageUrl).inputStream()
+                    }
+                    else -> {
+                        val conn = (URL(imageUrl).openConnection() as HttpURLConnection).apply {
+                            connectTimeout = 15000
+                            readTimeout = 25000
+                            setRequestProperty("User-Agent", "Mozilla/5.0 (Android; Mobile; Lark Wall 4K)")
+                        }
+                        conn.inputStream
+                    }
+                }
             }
 
-            val stream: InputStream = conn.inputStream
+            // 1. First decode bounds to compute safe inSampleSize and avoid OutOfMemoryError
+            val boundsOptions = BitmapFactory.Options().apply {
+                inJustDecodeBounds = true
+            }
+            openStream().use { stream ->
+                BitmapFactory.decodeStream(stream, null, boundsOptions)
+            }
 
-            // Decode in uncompressed 32-bit ARGB_8888 True Color
-            val options = BitmapFactory.Options().apply {
+            val displayMetrics = context.resources.displayMetrics
+            val screenWidth = displayMetrics.widthPixels
+            val screenHeight = displayMetrics.heightPixels
+
+            var inSampleSize = 1
+            if (boundsOptions.outHeight > screenHeight * 2 || boundsOptions.outWidth > screenWidth * 2) {
+                val halfHeight = boundsOptions.outHeight / 2
+                val halfWidth = boundsOptions.outWidth / 2
+                while ((halfHeight / inSampleSize) >= screenHeight && (halfWidth / inSampleSize) >= screenWidth) {
+                    inSampleSize *= 2
+                }
+            }
+
+            // 2. Decode bitmap with computed sample size
+            val decodeOptions = BitmapFactory.Options().apply {
+                this.inSampleSize = inSampleSize
                 inPreferredConfig = Bitmap.Config.ARGB_8888
                 inDither = true
                 inScaled = false
             }
 
-            val originalBitmap = BitmapFactory.decodeStream(stream, null, options)
-                ?: throw IllegalStateException("Failed to decode Ultra HD image stream")
-
-            val displayMetrics = context.resources.displayMetrics
-            val screenWidth = displayMetrics.widthPixels
-            val screenHeight = displayMetrics.heightPixels
+            val originalBitmap = openStream().use { stream ->
+                BitmapFactory.decodeStream(stream, null, decodeOptions)
+            } ?: throw IllegalStateException("Failed to decode Ultra HD image stream")
 
             // Scale and crop bitmap to pixel-perfect device screen aspect ratio
             val scale = maxOf(
@@ -77,9 +112,9 @@ object WallpaperUtils {
                 wallpaperManager.setBitmap(croppedBitmap)
             }
 
-            if (originalBitmap != scaledBitmap) originalBitmap.recycle()
-            if (scaledBitmap != croppedBitmap) scaledBitmap.recycle()
-            croppedBitmap.recycle()
+            if (originalBitmap != scaledBitmap && !originalBitmap.isRecycled) originalBitmap.recycle()
+            if (scaledBitmap != croppedBitmap && !scaledBitmap.isRecycled) scaledBitmap.recycle()
+            if (!croppedBitmap.isRecycled) croppedBitmap.recycle()
         }
     }
 }
