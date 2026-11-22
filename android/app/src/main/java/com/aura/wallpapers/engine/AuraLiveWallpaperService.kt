@@ -115,11 +115,13 @@ class AuraLiveWallpaperService : WallpaperService() {
         override fun onSurfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
             super.onSurfaceChanged(holder, format, width, height)
             currentHolder = holder
-            surfaceWidth = width
-            surfaceHeight = height
+            if (width > 0 && height > 0) {
+                surfaceWidth = width
+                surfaceHeight = height
+            }
 
             if (currentMode == "interactive") {
-                interactiveRenderer?.setDimensions(width, height)
+                interactiveRenderer?.setDimensions(surfaceWidth, surfaceHeight)
             } else {
                 exoPlayer?.setVideoSurfaceHolder(holder)
             }
@@ -140,7 +142,9 @@ class AuraLiveWallpaperService : WallpaperService() {
         override fun onTouchEvent(event: MotionEvent) {
             super.onTouchEvent(event)
             if (currentMode == "interactive") {
-                interactiveRenderer?.onTouchEvent(event.x, event.y, event.actionMasked)
+                runCatching {
+                    interactiveRenderer?.onTouchEvent(event.x, event.y, event.actionMasked)
+                }
             }
         }
 
@@ -188,7 +192,13 @@ class AuraLiveWallpaperService : WallpaperService() {
             val prefs = getSharedPreferences("aura_engine_prefs", Context.MODE_PRIVATE)
             val presetId = activePresetId ?: prefs.getString(Constants.PREF_KEY_ACTIVE_LIVE_PRESET_ID, "cyber_neon_1") ?: "cyber_neon_1"
 
-            Log.d(TAG, "Initializing Interactive Engine with preset: $presetId")
+            val frame = runCatching { holder.surfaceFrame }.getOrNull()
+            if (frame != null && frame.width() > 0 && frame.height() > 0) {
+                surfaceWidth = frame.width()
+                surfaceHeight = frame.height()
+            }
+
+            Log.d(TAG, "Initializing Interactive Engine with preset: $presetId (${surfaceWidth}x${surfaceHeight})")
 
             val config = InteractiveWallpaperRegistry.getConfig(presetId)
             interactiveRenderer = InteractiveWallpaperRenderer(config).apply {
@@ -248,6 +258,15 @@ class AuraLiveWallpaperService : WallpaperService() {
 
                     if (!running) break
 
+                    if (!holder.surface.isValid) {
+                        try {
+                            sleep(16L)
+                        } catch (e: InterruptedException) {
+                            break
+                        }
+                        continue
+                    }
+
                     val now = System.nanoTime()
                     val dt = ((now - lastTime) / 1_000_000_000f).coerceIn(0.001f, 0.05f)
                     lastTime = now
@@ -258,19 +277,19 @@ class AuraLiveWallpaperService : WallpaperService() {
                         } else {
                             holder.lockCanvas()
                         }
-                    } catch (e: Exception) {
+                    } catch (t: Throwable) {
                         null
                     }
 
                     if (canvas != null) {
                         try {
                             interactiveRenderer?.render(canvas, dt)
-                        } catch (e: Exception) {
-                            Log.e(TAG, "Render exception: ${e.message}")
+                        } catch (t: Throwable) {
+                            Log.e(TAG, "Render exception: ${t.message}", t)
                         } finally {
                             try {
                                 holder.unlockCanvasAndPost(canvas)
-                            } catch (e: Exception) {
+                            } catch (t: Throwable) {
                                 // Surface destroyed or invalid
                             }
                         }

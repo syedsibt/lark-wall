@@ -53,6 +53,8 @@ class MotionLoopsPipeline {
         isTouching: Boolean,
         palette: ColorPalette
     ) {
+        if (width <= 0 || height <= 0) return
+
         val w = width.toFloat()
         val h = height.toFloat()
         val cx = w * 0.5f
@@ -65,7 +67,8 @@ class MotionLoopsPipeline {
         canvas.save()
         canvas.translate(tx, ty)
 
-        when (archetype) {
+        try {
+            when (archetype) {
             // Futuristic and graphic motion designs (#01-#31)
             "ml_01_aurora_drift" -> drawAuroraDrift(canvas, simTime, w, h, cx, cy, palette)
             "ml_02_liquid_chrome_bloom" -> drawLiquidChromeBloom(canvas, simTime, w, h, cx, cy, palette)
@@ -128,6 +131,9 @@ class MotionLoopsPipeline {
             "ml_53_fountain_ripple" -> drawFountainRipple(canvas, simTime, w, h, cx, cy, palette)
 
             else -> drawAuroraDrift(canvas, simTime, w, h, cx, cy, palette)
+        }
+        } catch (t: Throwable) {
+            android.util.Log.e("MotionLoops", "Render exception in archetype: $archetype", t)
         }
 
         canvas.restore()
@@ -692,10 +698,13 @@ class MotionLoopsPipeline {
 
         // Horizontal scrolling rungs
         val rungs = 14
+        val range = (h - horizonY).coerceAtLeast(10f)
         for (i in 0 until rungs) {
-            val z = ((i * 45f + speed) % (h - horizonY))
-            val y = horizonY + z * (z / (h - horizonY))
-            canvas.drawLine(0f, y, w, y, drawPaint)
+            val z = ((i * 45f + speed) % range)
+            val y = horizonY + z * (z / range)
+            if (y.isFinite()) {
+                canvas.drawLine(0f, y, w, y, drawPaint)
+            }
         }
     }
 

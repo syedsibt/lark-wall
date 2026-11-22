@@ -184,6 +184,8 @@ class InteractiveWallpaperRenderer(
     }
 
     fun render(canvas: Canvas, deltaSeconds: Float) {
+        if (width <= 0 || height <= 0) return
+
         val dt = deltaSeconds.coerceIn(0.001f, 0.05f)
         simulationTime += dt * config.speed
 
@@ -195,35 +197,39 @@ class InteractiveWallpaperRenderer(
         canvas.save()
         canvas.translate(parallaxOffsetX, 0f)
 
-        when (config.family) {
-            EngineFamily.CYBERPUNK_NEON -> drawCyberpunkPipeline(canvas, dt)
-            EngineFamily.ABSTRACT_GEOMETRY -> drawGeometryPipeline(canvas, dt)
-            EngineFamily.FLUID_LIQUID -> drawFluidPipeline(canvas, dt)
-            EngineFamily.CELESTIAL_SPACE -> drawCelestialPipeline(canvas, dt)
-            EngineFamily.BIOLUMINESCENT_NATURE -> drawNaturePipeline(canvas, dt)
-            EngineFamily.MINIMAL_ZEN -> drawMinimalPipeline(canvas, dt)
-            EngineFamily.BOLD_CHROMATIC -> drawChromaticPipeline(canvas, dt)
-            EngineFamily.MOTION_LOOPS -> motionLoopsPipeline.render(
-                canvas,
-                config.archetype,
-                simulationTime,
-                dt,
-                width,
-                height,
-                touchX,
-                touchY,
-                isTouching,
-                config.palette
-            )
-        }
+        try {
+            when (config.family) {
+                EngineFamily.CYBERPUNK_NEON -> drawCyberpunkPipeline(canvas, dt)
+                EngineFamily.ABSTRACT_GEOMETRY -> drawGeometryPipeline(canvas, dt)
+                EngineFamily.FLUID_LIQUID -> drawFluidPipeline(canvas, dt)
+                EngineFamily.CELESTIAL_SPACE -> drawCelestialPipeline(canvas, dt)
+                EngineFamily.BIOLUMINESCENT_NATURE -> drawNaturePipeline(canvas, dt)
+                EngineFamily.MINIMAL_ZEN -> drawMinimalPipeline(canvas, dt)
+                EngineFamily.BOLD_CHROMATIC -> drawChromaticPipeline(canvas, dt)
+                EngineFamily.MOTION_LOOPS -> motionLoopsPipeline.render(
+                    canvas,
+                    config.archetype,
+                    simulationTime,
+                    dt,
+                    width,
+                    height,
+                    touchX,
+                    touchY,
+                    isTouching,
+                    config.palette
+                )
+            }
 
-        // 3. Draw Touch Trail Glow if active
-        if (config.interactionType == InteractionType.LIGHT_TRAIL_GLOW && trailCount > 1) {
-            drawLightTrail(canvas)
-        }
+            // 3. Draw Touch Trail Glow if active
+            if (config.interactionType == InteractionType.LIGHT_TRAIL_GLOW && trailCount > 1) {
+                drawLightTrail(canvas)
+            }
 
-        // 4. Update and Draw Expanding Interactive Ripples
-        drawRipples(canvas, dt)
+            // 4. Update and Draw Expanding Interactive Ripples
+            drawRipples(canvas, dt)
+        } catch (t: Throwable) {
+            android.util.Log.e("InteractiveRenderer", "Render exception in family ${config.family}: ${t.message}", t)
+        }
 
         canvas.restore()
     }
@@ -1073,10 +1079,11 @@ class InteractiveWallpaperRenderer(
     private fun drawRipples(canvas: Canvas, dt: Float) {
         for (r in ripples) {
             if (r.active) {
+                val maxR = if (r.maxRadius > 1f) r.maxRadius else 100f
                 r.radius += (280f * config.speed + 150f) * dt
-                r.alpha = (1f - (r.radius / r.maxRadius)).coerceIn(0f, 1f)
+                r.alpha = (1f - (r.radius / maxR)).coerceIn(0f, 1f)
 
-                if (r.radius >= r.maxRadius || r.alpha <= 0.01f) {
+                if (r.radius >= maxR || r.alpha <= 0.01f) {
                     r.active = false
                 } else {
                     ripplePaint.color = r.color

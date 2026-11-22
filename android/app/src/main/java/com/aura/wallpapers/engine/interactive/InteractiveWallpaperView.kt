@@ -3,6 +3,7 @@ package com.aura.wallpapers.engine.interactive
 import android.content.Context
 import android.graphics.Canvas
 import android.util.AttributeSet
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 
@@ -12,6 +13,7 @@ class InteractiveWallpaperView @JvmOverloads constructor(
     defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr) {
 
+    private val TAG = "InteractiveView"
     private var renderer: InteractiveWallpaperRenderer? = null
     private var lastFrameTimeNanos: Long = 0L
     private var isAnimating: Boolean = false
@@ -26,12 +28,16 @@ class InteractiveWallpaperView @JvmOverloads constructor(
         } else {
             renderer?.updateConfig(config)
         }
-        postInvalidateOnAnimation()
+        if (isAttachedToWindow && isShown) {
+            postInvalidateOnAnimation()
+        }
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
-        renderer?.setDimensions(w, h)
+        if (w > 0 && h > 0) {
+            renderer?.setDimensions(w, h)
+        }
     }
 
     override fun onAttachedToWindow() {
@@ -49,15 +55,30 @@ class InteractiveWallpaperView @JvmOverloads constructor(
     override fun onVisibilityChanged(changedView: View, visibility: Int) {
         super.onVisibilityChanged(changedView, visibility)
         isAnimating = (visibility == VISIBLE)
-        if (isAnimating) {
+        if (isAnimating && isAttachedToWindow) {
+            lastFrameTimeNanos = System.nanoTime()
+            postInvalidateOnAnimation()
+        }
+    }
+
+    override fun onWindowVisibilityChanged(visibility: Int) {
+        super.onWindowVisibilityChanged(visibility)
+        isAnimating = (visibility == VISIBLE)
+        if (isAnimating && isAttachedToWindow) {
             lastFrameTimeNanos = System.nanoTime()
             postInvalidateOnAnimation()
         }
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        renderer?.onTouchEvent(event.x, event.y, event.actionMasked)
-        postInvalidateOnAnimation()
+        try {
+            renderer?.onTouchEvent(event.x, event.y, event.actionMasked)
+        } catch (t: Throwable) {
+            Log.e(TAG, "Touch handling error: ${t.message}", t)
+        }
+        if (isAnimating && isAttachedToWindow) {
+            postInvalidateOnAnimation()
+        }
         // Return true to consume and receive drag/move events
         return true
     }
@@ -72,9 +93,13 @@ class InteractiveWallpaperView @JvmOverloads constructor(
         }
         lastFrameTimeNanos = now
 
-        renderer?.render(canvas, dt)
+        try {
+            renderer?.render(canvas, dt)
+        } catch (t: Throwable) {
+            Log.e(TAG, "Render error in onDraw: ${t.message}", t)
+        }
 
-        if (isAnimating && isShown) {
+        if (isAnimating && isShown && isAttachedToWindow) {
             postInvalidateOnAnimation()
         }
     }

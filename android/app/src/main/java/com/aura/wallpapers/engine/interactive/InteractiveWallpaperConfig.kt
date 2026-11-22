@@ -20,10 +20,20 @@ data class InteractiveWallpaperConfig(
     companion object {
         const val PREFIX = "engine://interactive/"
 
-        fun isInteractiveUri(uri: String): Boolean = uri.startsWith(PREFIX)
+        fun isInteractiveUri(uri: String?): Boolean {
+            if (uri.isNullOrBlank()) return false
+            return uri.startsWith(PREFIX) || uri.startsWith("ml_")
+        }
 
-        fun extractPresetId(uri: String): String =
-            if (uri.startsWith(PREFIX)) uri.removePrefix(PREFIX) else uri
+        fun extractPresetId(uri: String?): String {
+            if (uri.isNullOrBlank()) return "cyber_neon_1"
+            val trimmed = uri.trim()
+            return if (trimmed.startsWith(PREFIX)) {
+                trimmed.removePrefix(PREFIX).trim().ifBlank { "cyber_neon_1" }
+            } else {
+                trimmed
+            }
+        }
     }
 }
 
