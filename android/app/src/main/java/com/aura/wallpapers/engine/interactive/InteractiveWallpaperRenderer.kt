@@ -36,6 +36,17 @@ class InteractiveWallpaperRenderer(
         style = Paint.Style.STROKE
     }
     private val motionLoopsPipeline = MotionLoopsPipeline()
+    private val signaturePipeline = SignatureDesignsPipeline()
+
+    // Touch events arrive on the UI thread while frames are drawn on a render thread
+    // (live wallpaper service), so all mutable state is guarded by this lock.
+    private val stateLock = Any()
+
+    // Cached unit-radius gradients (radius 1 at origin), drawn with canvas translate/scale
+    // so that no shader objects are allocated per frame.
+    private val radialCache = HashMap<String, RadialGradient>()
+    private var auroraShader: LinearGradient? = null
+    private var auroraKey: Long = 0L
 
     // Touch & Interactive State
     private var touchX: Float = -1f
@@ -84,10 +95,19 @@ class InteractiveWallpaperRenderer(
     }
 
     fun setDimensions(w: Int, h: Int) {
-        if (w > 0 && h > 0) {
-            width = w
-            height = h
-            initParticles()
+        synchronized(stateLock) {
+            if (w > 0 && h > 0) {
+                width = w
+                height = h
+                initParticles()
+            }
+        }
+    }
+
+    /** Jumps the animation clock, used to render a representative still frame (thumbnails, exports). */
+    fun setSimulationTime(time: Float) {
+        synchronized(stateLock) {
+            simulationTime = time
         }
     }
 
@@ -101,24 +121,26 @@ class InteractiveWallpaperRenderer(
     }
 
     fun onTouchEvent(eventX: Float, eventY: Float, action: Int) {
-        touchX = eventX
-        touchY = eventY
+        synchronized(stateLock) {
+            touchX = eventX
+            touchY = eventY
 
-        when (action) {
-            MotionEvent.ACTION_DOWN -> {
-                isTouching = true
-                spawnRipple(eventX, eventY)
-                addTrailPoint(eventX, eventY)
-            }
-            MotionEvent.ACTION_MOVE -> {
-                isTouching = true
-                addTrailPoint(eventX, eventY)
-                if (config.interactionType == InteractionType.RIPPLE_DISPERSION && Math.random() < 0.15) {
+            when (action) {
+                MotionEvent.ACTION_DOWN -> {
+                    isTouching = true
                     spawnRipple(eventX, eventY)
+                    addTrailPoint(eventX, eventY)
                 }
-            }
-            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                isTouching = false
+                MotionEvent.ACTION_MOVE -> {
+                    isTouching = true
+                    addTrailPoint(eventX, eventY)
+                    if (config.interactionType == InteractionType.RIPPLE_DISPERSION && Math.random() < 0.15) {
+                        spawnRipple(eventX, eventY)
+                    }
+                }
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    isTouching = false
+                }
             }
         }
     }
@@ -179,11 +201,39 @@ class InteractiveWallpaperRenderer(
     }
 
     fun updateConfig(newConfig: InteractiveWallpaperConfig) {
-        config = newConfig
-        initParticles()
+        synchronized(stateLock) {
+            config = newConfig
+            trailCount = 0
+            for (r in ripples) r.active = false
+            initParticles()
+        }
     }
 
-    fun render(canvas: Canvas, deltaSeconds: Float) {
+    /** Unit radial gradient cached by its colours; draw it with [drawRadial]. */
+    private fun unitRadial(colors: IntArray, stops: FloatArray): RadialGradient {
+        val key = colors.joinToString(",") + "|" + stops.joinToString(",")
+        return radialCache.getOrPut(key) {
+            RadialGradient(0f, 0f, 1f, colors, stops, Shader.TileMode.CLAMP)
+        }
+    }
+
+    private fun drawRadial(canvas: Canvas, cx: Float, cy: Float, radius: Float, shader: RadialGradient, alpha: Int) {
+        if (radius <= 0f) return
+        fillPaint.shader = shader
+        fillPaint.alpha = alpha
+        canvas.save()
+        canvas.translate(cx, cy)
+        canvas.scale(radius, radius)
+        canvas.drawCircle(0f, 0f, 1f, fillPaint)
+        canvas.restore()
+        fillPaint.shader = null
+    }
+
+    fun render(canvas: Canvas, deltaSeconds: Float) = synchronized(stateLock) {
+        renderLocked(canvas, deltaSeconds)
+    }
+
+    private fun renderLocked(canvas: Canvas, deltaSeconds: Float) {
         if (width <= 0 || height <= 0) return
 
         val dt = deltaSeconds.coerceIn(0.001f, 0.05f)
@@ -198,7 +248,12 @@ class InteractiveWallpaperRenderer(
         canvas.translate(parallaxOffsetX, 0f)
 
         try {
-            when (config.family) {
+            if (SignatureCatalog.isSignature(config.archetype)) {
+                signaturePipeline.render(
+                    canvas, config.archetype, simulationTime, dt, width, height,
+                    touchX - parallaxOffsetX, touchY, isTouching, config.palette
+                )
+            } else when (config.family) {
                 EngineFamily.CYBERPUNK_NEON -> drawCyberpunkPipeline(canvas, dt)
                 EngineFamily.ABSTRACT_GEOMETRY -> drawGeometryPipeline(canvas, dt)
                 EngineFamily.FLUID_LIQUID -> drawFluidPipeline(canvas, dt)
@@ -220,7 +275,21 @@ class InteractiveWallpaperRenderer(
                 )
             }
 
-            // 3. Draw Touch Trail Glow if active
+        } catch (t: Throwable) {
+            android.util.Log.e("InteractiveRenderer", "Render exception in family ${config.family}: ${t.message}", t)
+        }
+
+        canvas.restore()
+
+        // Touch feedback is drawn in screen space (outside the parallax translation)
+        // so ripples and trails appear exactly under the finger.
+        try {
+            // 3. Touch trail: fades out once the finger is lifted instead of staying on screen forever
+            if (!isTouching && trailCount > 0) {
+                System.arraycopy(trailX, 1, trailX, 0, trailX.size - 1)
+                System.arraycopy(trailY, 1, trailY, 0, trailY.size - 1)
+                trailCount--
+            }
             if (config.interactionType == InteractionType.LIGHT_TRAIL_GLOW && trailCount > 1) {
                 drawLightTrail(canvas)
             }
@@ -228,10 +297,8 @@ class InteractiveWallpaperRenderer(
             // 4. Update and Draw Expanding Interactive Ripples
             drawRipples(canvas, dt)
         } catch (t: Throwable) {
-            android.util.Log.e("InteractiveRenderer", "Render exception in family ${config.family}: ${t.message}", t)
+            android.util.Log.e("InteractiveRenderer", "Touch overlay exception: ${t.message}", t)
         }
-
-        canvas.restore()
     }
 
     // =========================================================================
@@ -244,7 +311,7 @@ class InteractiveWallpaperRenderer(
                 val cols = 18
                 val colWidth = width / cols.toFloat()
                 fillPaint.color = config.palette.primary
-                fillPaint.textSize = 28f
+                fillPaint.textSize = width / 38f
 
                 for (c in 0 until cols) {
                     val speed = 80f + (c % 5) * 35f
@@ -253,7 +320,7 @@ class InteractiveWallpaperRenderer(
 
                     // Trail characters
                     for (i in 0..12) {
-                        val y = dropY - i * 32f
+                        val y = dropY - i * fillPaint.textSize * 1.15f
                         if (y in -20f..height.toFloat()) {
                             val alpha = ((1f - i / 12f) * 255).toInt().coerceIn(20, 255)
                             fillPaint.color = if (i == 0) config.palette.accent else config.palette.primary
@@ -304,15 +371,11 @@ class InteractiveWallpaperRenderer(
                 val centerX = width * 0.5f
 
                 // Horizon glow
-                fillPaint.shader = RadialGradient(
-                    centerX, horizonY, width * 0.45f,
-                    intArrayOf(config.palette.secondary, Color.TRANSPARENT),
-                    floatArrayOf(0f, 1f),
-                    Shader.TileMode.CLAMP
+                drawRadial(
+                    canvas, centerX, horizonY, width * 0.45f,
+                    unitRadial(intArrayOf(config.palette.secondary, Color.TRANSPARENT), floatArrayOf(0f, 1f)),
+                    130
                 )
-                fillPaint.alpha = 130
-                canvas.drawCircle(centerX, horizonY, width * 0.45f, fillPaint)
-                fillPaint.shader = null
 
                 // Highway Road Grid
                 drawPaint.color = config.palette.primary
@@ -483,7 +546,7 @@ class InteractiveWallpaperRenderer(
                 val cubeSize = 65f
                 val hSize = cubeSize * 0.866f
                 val cols = (width / (cubeSize * 1.5f)).toInt() + 1
-                val rows = (height / (hSize * 2f)).toInt() + 2
+                val rows = (height / hSize).toInt() + 2
 
                 for (r in 0..rows) {
                     for (c in 0..cols) {
@@ -625,18 +688,18 @@ class InteractiveWallpaperRenderer(
                 val cy = height * 0.5f
                 for (i in 0 until 5) {
                     val radius = width * (0.2f + i * 0.1f)
-                    fillPaint.shader = RadialGradient(
+                    drawRadial(
+                        canvas,
                         cx + sin(simulationTime + i) * 60f,
                         cy + cos(simulationTime * 0.7f + i) * 80f,
                         radius,
-                        intArrayOf(config.palette.primary, config.palette.secondary, Color.TRANSPARENT),
-                        floatArrayOf(0f, 0.5f, 1f),
-                        Shader.TileMode.CLAMP
+                        unitRadial(
+                            intArrayOf(config.palette.primary, config.palette.secondary, Color.TRANSPARENT),
+                            floatArrayOf(0f, 0.5f, 1f)
+                        ),
+                        90
                     )
-                    fillPaint.alpha = 90
-                    canvas.drawCircle(cx, cy, radius, fillPaint)
                 }
-                fillPaint.shader = null
             }
             "viscous_ripple_pool" -> {
                 // Multi-source water wave simulation with reflective interference crests
@@ -705,15 +768,14 @@ class InteractiveWallpaperRenderer(
             "black_hole_lens" -> {
                 // Relativistic Einstein Ring & Swirling Accretion Disk
                 val accretionR = width * 0.38f
-                fillPaint.shader = RadialGradient(
-                    cx, cy, accretionR,
-                    intArrayOf(Color.BLACK, config.palette.secondary, config.palette.primary, Color.TRANSPARENT),
-                    floatArrayOf(0f, 0.4f, 0.8f, 1f),
-                    Shader.TileMode.CLAMP
+                drawRadial(
+                    canvas, cx, cy, accretionR,
+                    unitRadial(
+                        intArrayOf(Color.BLACK, config.palette.secondary, config.palette.primary, Color.TRANSPARENT),
+                        floatArrayOf(0f, 0.4f, 0.8f, 1f)
+                    ),
+                    230
                 )
-                fillPaint.alpha = 230
-                canvas.drawCircle(cx, cy, accretionR, fillPaint)
-                fillPaint.shader = null
 
                 // Relativistic Photon Ring
                 drawPaint.color = config.palette.accent
@@ -857,22 +919,81 @@ class InteractiveWallpaperRenderer(
                 // Shimmering Aurora Borealis Solar Curtains
                 val rays = 24
                 val rayWidth = width / rays.toFloat()
-                for (r in 0 until rays) {
-                    val x = r * rayWidth
-                    val wave = sin(x * 0.005f + simulationTime * 1.5f) * 80f
-                    val topY = height * 0.15f + wave
-                    val botY = topY + 280f
-
-                    fillPaint.shader = LinearGradient(
-                        x, topY, x, botY,
+                val curtainH = height * 0.45f
+                val key = (config.palette.primary.toLong() shl 32) xor (config.palette.secondary.toLong() and 0xFFFFFFFFL) xor curtainH.toLong()
+                if (auroraShader == null || auroraKey != key) {
+                    auroraKey = key
+                    auroraShader = LinearGradient(
+                        0f, 0f, 0f, curtainH,
                         intArrayOf(Color.TRANSPARENT, config.palette.primary, config.palette.secondary, Color.TRANSPARENT),
                         floatArrayOf(0f, 0.3f, 0.7f, 1f),
                         Shader.TileMode.CLAMP
                     )
-                    fillPaint.alpha = 140
-                    canvas.drawRect(x, topY, x + rayWidth, botY, fillPaint)
+                }
+                fillPaint.shader = auroraShader
+                for (layer in 0..1) {
+                    for (r in 0 until rays) {
+                        val x = r * rayWidth
+                        val wave = sin(x * 0.005f + simulationTime * (1.5f - layer * 0.6f) + layer * 2f) * 80f
+                        val topY = height * (0.08f + layer * 0.2f) + wave
+                        val stretch = 0.8f + 0.35f * sin(x * 0.011f + simulationTime * 0.9f + layer)
+                        fillPaint.alpha = if (layer == 0) 140 else 90
+                        canvas.save()
+                        canvas.translate(x, topY)
+                        canvas.scale(1f, stretch)
+                        canvas.drawRect(0f, 0f, rayWidth + 1f, curtainH, fillPaint)
+                        canvas.restore()
+                    }
                 }
                 fillPaint.shader = null
+            }
+            "rainforest_rain" -> {
+                // Slanted rain falling through a dark leaf canopy onto a rippling pool
+                val canopyH = height * 0.22f
+                for (i in 0 until 26) {
+                    val lx = (i * 97f) % width
+                    val ly = (i * 53f) % canopyH
+                    val sway = sin(simulationTime * 0.8f + i) * 6f
+                    canvas.save()
+                    canvas.translate(lx + sway, ly)
+                    canvas.rotate((i * 37f) % 180f - 90f)
+                    fillPaint.color = if (i % 3 == 0) config.palette.secondary else config.palette.tertiary
+                    fillPaint.alpha = 150
+                    canvas.drawOval(-width * 0.09f, -width * 0.025f, width * 0.09f, width * 0.025f, fillPaint)
+                    canvas.restore()
+                }
+
+                val slant = 0.18f
+                drawPaint.color = config.palette.primary
+                drawPaint.strokeWidth = 2f
+                val pCount = activeParticleCount
+                val poolY = height * 0.86f
+                for (i in 0 until pCount) {
+                    pY[i] += (900f * config.speed + (i % 5) * 60f) * dt
+                    pX[i] += 900f * slant * dt
+                    if (pY[i] > poolY) {
+                        pY[i] = canopyH * 0.5f + (i * 13f) % canopyH
+                        pX[i] = (i * 71f + simulationTime * 53f) % width
+                    }
+                    if (pX[i] > width) pX[i] -= width
+                    drawPaint.alpha = (pAlpha[i] * 180).toInt().coerceIn(40, 200)
+                    val len = 40f
+                    canvas.drawLine(pX[i] - len * slant, pY[i] - len, pX[i], pY[i], drawPaint)
+                }
+
+                // pool surface + ripple rings
+                fillPaint.color = config.palette.tertiary
+                fillPaint.alpha = 90
+                canvas.drawRect(0f, poolY, width.toFloat(), height.toFloat(), fillPaint)
+                ripplePaint.color = config.palette.accent
+                ripplePaint.strokeWidth = 1.5f
+                for (k in 0 until 12) {
+                    val life = (simulationTime * 0.9f + k * 0.173f) % 1f
+                    val rx = (k * 211f) % width
+                    val ry = poolY + 20f + (k * 37f) % (height - poolY - 30f).coerceAtLeast(1f)
+                    ripplePaint.alpha = ((1f - life) * 160).toInt()
+                    canvas.drawOval(rx - life * 70f, ry - life * 18f, rx + life * 70f, ry + life * 18f, ripplePaint)
+                }
             }
             else -> {
                 // enchanted_fireflies (Swarming organic bioluminescent fireflies)
@@ -967,16 +1088,14 @@ class InteractiveWallpaperRenderer(
                 val breathe = 0.85f + 0.15f * sin(simulationTime * 1.2f)
                 val gradRadius = (width * 0.55f) * breathe
 
-                val shader = RadialGradient(
-                    cx, cy, gradRadius,
-                    intArrayOf(config.palette.primary, config.palette.secondary, Color.TRANSPARENT),
-                    floatArrayOf(0f, 0.6f, 1f),
-                    Shader.TileMode.CLAMP
+                drawRadial(
+                    canvas, cx, cy, gradRadius,
+                    unitRadial(
+                        intArrayOf(config.palette.primary, config.palette.secondary, Color.TRANSPARENT),
+                        floatArrayOf(0f, 0.6f, 1f)
+                    ),
+                    110
                 )
-                fillPaint.shader = shader
-                fillPaint.alpha = 110
-                canvas.drawCircle(cx, cy, gradRadius, fillPaint)
-                fillPaint.shader = null
             }
         }
     }

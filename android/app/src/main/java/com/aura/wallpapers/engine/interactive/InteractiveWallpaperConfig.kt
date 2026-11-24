@@ -1,7 +1,5 @@
 package com.aura.wallpapers.engine.interactive
 
-import java.util.Random
-
 data class InteractiveWallpaperConfig(
     val presetId: String,
     val title: String,
@@ -102,6 +100,7 @@ object InteractiveWallpaperRegistry {
      * Uses a deterministic algorithm so that a given ID always produces the exact same configuration,
      * maintaining high performance and reproducible graphics without requiring heavy file lookups.
      */
+    @Synchronized
     fun getConfig(presetId: String): InteractiveWallpaperConfig {
         val cleanId = InteractiveWallpaperConfig.extractPresetId(presetId)
         return configsCache.getOrPut(cleanId) {
@@ -111,7 +110,25 @@ object InteractiveWallpaperRegistry {
 
     private fun buildConfigFromPresetId(presetId: String): InteractiveWallpaperConfig {
         val hash = (presetId.hashCode().toLong() and 0xFFFFFFFFL)
-        val rng = Random(hash)
+
+        // 0. Signature designs: each one is a unique drawing routine with its own curated palette
+        SignatureCatalog.BY_ID[presetId]?.let { entry ->
+            return InteractiveWallpaperConfig(
+                presetId = presetId,
+                title = entry.title,
+                family = entry.family,
+                archetype = entry.id,
+                palette = entry.palette,
+                particleCount = 60,
+                speed = 1f,
+                complexity = 1f,
+                symmetry = 6,
+                glowRadius = 6f,
+                interactionType = entry.interaction,
+                interactionStrength = 1f,
+                seed = hash
+            )
+        }
 
         // 1. Resolve Family & Archetype explicitly from preset prefix
         val (family, archetype) = when {

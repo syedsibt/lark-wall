@@ -38,6 +38,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -64,7 +65,7 @@ fun LiveWallpapersScreen(
     onNavigateToSettings: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    var ecoModeActive by remember { mutableStateOf(true) }
+    val ecoModeActive = uiState.isEcoModeEnabled
 
     Column(
         modifier = Modifier
@@ -101,7 +102,7 @@ fun LiveWallpapersScreen(
                             if (ecoModeActive) WallixaSecondaryContainer.copy(alpha = 0.6f)
                             else MaterialTheme.colorScheme.surfaceVariant
                         )
-                        .clickable { ecoModeActive = !ecoModeActive }
+                        .clickable { viewModel.setEcoMode(!ecoModeActive) }
                         .padding(horizontal = 10.dp, vertical = 6.dp)
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -135,15 +136,27 @@ fun LiveWallpapersScreen(
         }
 
         // Horizontal Filter Chips
-        val filterTags = listOf("All", "Cyber", "Geometry", "Fluid", "Space", "Nature", "Minimal", "Chromatic")
-        var selectedTag by remember { mutableStateOf("All") }
+        // Each chip maps to one live category name fragment, so filtering is exact
+        // (matching on titles/tags made e.g. "Space" also catch unrelated wallpapers).
+        val filterTags = listOf(
+            "All" to "",
+            "Cyber" to "Cyberpunk",
+            "Geometry" to "Geometry",
+            "Fluid" to "Fluid",
+            "Space" to "Space",
+            "Nature" to "Nature",
+            "Minimal" to "Minimal",
+            "Chromatic" to "Chromatic",
+            "Motion" to "Motion Loops"
+        )
+        var selectedTag by rememberSaveable { mutableStateOf("All") }
 
         LazyRow(
             contentPadding = PaddingValues(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.padding(vertical = 4.dp)
         ) {
-            items(filterTags) { tag ->
+            items(filterTags) { (tag, _) ->
                 val isSelected = tag == selectedTag
                 Box(
                     modifier = Modifier
@@ -188,7 +201,11 @@ fun LiveWallpapersScreen(
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = "Battery-Smart: Previews pause while scrolling to conserve charge",
+                        text = if (ecoModeActive) {
+                            "Eco Mode on: your live wallpaper pauses while Battery Saver is active"
+                        } else {
+                            "Eco Mode off: your live wallpaper keeps animating in Battery Saver"
+                        },
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onSurface
@@ -198,7 +215,7 @@ fun LiveWallpapersScreen(
                     modifier = Modifier
                         .size(8.dp)
                         .clip(CircleShape)
-                        .background(WallixaPrimary)
+                        .background(if (ecoModeActive) WallixaPrimary else MaterialTheme.colorScheme.outline)
                 )
             }
         }
@@ -208,10 +225,9 @@ fun LiveWallpapersScreen(
             if (selectedTag == "All") {
                 uiState.liveWallpapers
             } else {
+                val fragment = filterTags.firstOrNull { it.first == selectedTag }?.second.orEmpty()
                 uiState.liveWallpapers.filter { live ->
-                    live.categoryName.contains(selectedTag, ignoreCase = true) ||
-                    live.tags.any { it.contains(selectedTag, ignoreCase = true) } ||
-                    live.title.contains(selectedTag, ignoreCase = true)
+                    live.categoryName.contains(fragment, ignoreCase = true)
                 }
             }
         }

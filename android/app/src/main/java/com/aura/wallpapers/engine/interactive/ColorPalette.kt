@@ -129,6 +129,70 @@ data class ColorPalette(
             accent = rgb(34, 197, 94)         // Chromatic Green
         )
 
+        // ---- Curated palettes for the Signature designs (one look per design) ----
+        val AMBER_TERMINAL = ColorPalette(
+            name = "Amber Terminal",
+            background = rgb(8, 6, 2),
+            primary = rgb(255, 176, 0),
+            secondary = rgb(255, 120, 20),
+            tertiary = rgb(120, 80, 10),
+            accent = rgb(255, 236, 170)
+        )
+
+        val ARCTIC_ICE = ColorPalette(
+            name = "Arctic Ice",
+            background = rgb(4, 10, 20),
+            primary = rgb(186, 230, 253),
+            secondary = rgb(125, 211, 252),
+            tertiary = rgb(30, 58, 95),
+            accent = rgb(255, 255, 255)
+        )
+
+        val MIDNIGHT_OCEAN = ColorPalette(
+            name = "Midnight Ocean",
+            background = rgb(2, 6, 18),
+            primary = rgb(30, 64, 175),
+            secondary = rgb(14, 116, 144),
+            tertiary = rgb(8, 30, 70),
+            accent = rgb(254, 243, 199)
+        )
+
+        val BAMBOO_MIST = ColorPalette(
+            name = "Bamboo Mist",
+            background = rgb(6, 14, 10),
+            primary = rgb(74, 160, 90),
+            secondary = rgb(132, 204, 22),
+            tertiary = rgb(20, 70, 40),
+            accent = rgb(220, 252, 231)
+        )
+
+        val LANTERN_GLOW = ColorPalette(
+            name = "Lantern Glow",
+            background = rgb(10, 6, 20),
+            primary = rgb(255, 150, 50),
+            secondary = rgb(239, 68, 68),
+            tertiary = rgb(60, 30, 90),
+            accent = rgb(255, 230, 160)
+        )
+
+        val LAVA_LAMP = ColorPalette(
+            name = "Lava Lamp",
+            background = rgb(16, 4, 12),
+            primary = rgb(255, 64, 129),
+            secondary = rgb(255, 145, 0),
+            tertiary = rgb(124, 58, 237),
+            accent = rgb(255, 214, 170)
+        )
+
+        val INK_WASH = ColorPalette(
+            name = "Ink Wash",
+            background = rgb(6, 6, 12),
+            primary = rgb(99, 102, 241),
+            secondary = rgb(236, 72, 153),
+            tertiary = rgb(20, 184, 166),
+            accent = rgb(250, 204, 21)
+        )
+
         val ALL_PALETTES = listOf(
             CYBER_NEON, TOKYO_NIGHT, MATRIX_EMERALD, SYNTHWAVE_SUNSET,
             LIQUID_CHROME, DEEP_NEBULA, SOLAR_CORONA, SACRED_GOLD,

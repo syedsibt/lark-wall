@@ -7,8 +7,10 @@ import com.aura.wallpapers.domain.model.Category
 import com.aura.wallpapers.domain.model.LiveWallpaper
 import com.aura.wallpapers.domain.usecase.GetCategoriesUseCase
 import com.aura.wallpapers.domain.usecase.GetLiveWallpapersUseCase
+import com.aura.wallpapers.domain.repository.SettingsRepository
 import com.aura.wallpapers.domain.usecase.ToggleFavoriteUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -22,6 +24,7 @@ data class LiveUiState(
     val liveWallpapers: List<LiveWallpaper> = emptyList(),
     val liveCategories: List<Category> = emptyList(),
     val selectedCategoryId: String? = null,
+    val isEcoModeEnabled: Boolean = true,
     val error: String? = null
 )
 
@@ -30,8 +33,11 @@ class LiveWallpapersViewModel @Inject constructor(
     private val databaseInitializer: DatabaseInitializer,
     private val getLiveWallpapersUseCase: GetLiveWallpapersUseCase,
     private val getCategoriesUseCase: GetCategoriesUseCase,
-    private val toggleFavoriteUseCase: ToggleFavoriteUseCase
+    private val toggleFavoriteUseCase: ToggleFavoriteUseCase,
+    private val settingsRepository: SettingsRepository
 ) : ViewModel() {
+
+    private var wallpapersJob: Job? = null
 
     private val _uiState = MutableStateFlow(LiveUiState())
     val uiState: StateFlow<LiveUiState> = _uiState.asStateFlow()
@@ -42,6 +48,17 @@ class LiveWallpapersViewModel @Inject constructor(
             loadLiveCategories()
             loadLiveWallpapers()
         }
+        viewModelScope.launch {
+            settingsRepository.isBatterySaverEnabled
+                .catch { }
+                .collect { enabled -> _uiState.update { it.copy(isEcoModeEnabled = enabled) } }
+        }
+    }
+
+    /** Eco Mode = pause the applied live wallpaper while the system Battery Saver is on. */
+    fun setEcoMode(enabled: Boolean) {
+        _uiState.update { it.copy(isEcoModeEnabled = enabled) }
+        viewModelScope.launch { settingsRepository.setBatterySaverEnabled(enabled) }
     }
 
     private fun loadLiveCategories() {
@@ -55,7 +72,10 @@ class LiveWallpapersViewModel @Inject constructor(
     }
 
     fun loadLiveWallpapers() {
-        viewModelScope.launch {
+        // Cancel the previous collector; otherwise every category switch stacked another
+        // Room flow collector and older ones kept overwriting the list.
+        wallpapersJob?.cancel()
+        wallpapersJob = viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             getLiveWallpapersUseCase(categoryId = _uiState.value.selectedCategoryId)
                 .catch { err ->

@@ -33,4 +33,7 @@ interface DownloadDao {
 
     @Query("DELETE FROM downloads")
     suspend fun clearAllDownloads()
+
+    @Query("UPDATE downloads SET thumbnailUrl = :thumbnailUrl WHERE assetId = :assetId")
+    suspend fun updateThumbnailForAsset(assetId: String, thumbnailUrl: String)
 }

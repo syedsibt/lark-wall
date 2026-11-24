@@ -16,6 +16,15 @@ interface WallpaperDao {
     @Query("SELECT COUNT(*) FROM wallpapers")
     suspend fun getWallpaperCount(): Int
 
+    @Query("DELETE FROM wallpapers")
+    suspend fun clearWallpapers()
+
+    @Query("SELECT * FROM wallpapers")
+    suspend fun getAllWallpapersList(): List<WallpaperEntity>
+
+    @Query("SELECT * FROM live_wallpapers")
+    suspend fun getAllLiveWallpapersList(): List<LiveWallpaperEntity>
+
     @Query("SELECT * FROM wallpapers ORDER BY downloadCount DESC LIMIT :limit OFFSET :offset")
     fun getPopularWallpapers(limit: Int, offset: Int): Flow<List<WallpaperEntity>>
 

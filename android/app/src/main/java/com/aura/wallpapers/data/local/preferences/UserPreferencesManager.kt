@@ -71,6 +71,12 @@ class UserPreferencesManager @Inject constructor(
         context.dataStore.edit { prefs ->
             prefs[keyBatterySaver] = enabled
         }
+        // The live wallpaper service runs outside the app UI and reads this flag from
+        // SharedPreferences; without this mirror the toggle never reached the wallpaper.
+        context.getSharedPreferences("aura_engine_prefs", Context.MODE_PRIVATE)
+            .edit()
+            .putBoolean(Constants.PREF_KEY_BATTERY_SAVER_ENABLED, enabled)
+            .apply()
     }
 
     suspend fun setActiveLiveWallpaper(path: String, title: String) {

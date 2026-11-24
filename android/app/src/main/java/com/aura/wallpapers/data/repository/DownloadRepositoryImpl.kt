@@ -60,8 +60,13 @@ class DownloadRepositoryImpl @Inject constructor(
         fileSizeBytes: Long
     ): Unit = withContext(ioDispatcher) {
         val downloadId = UUID.randomUUID().toString()
-        val extension = if (isLive) "mp4" else "webp"
-        val fileName = "${title.lowercase().replace(" ", "_")}_${assetId.take(8)}.$extension"
+        val extension = when {
+            downloadUrl.startsWith("engine://") || downloadUrl.startsWith("ml_") -> "png"
+            isLive -> "mp4"
+            else -> "webp"
+        }
+        val safeTitle = title.lowercase().replace(Regex("[^a-z0-9]+"), "_").trim('_').ifBlank { "wallpaper" }
+        val fileName = "${safeTitle}_${assetId.takeLast(8)}.$extension"
 
         val entity = DownloadEntity(
             id = downloadId,
@@ -79,8 +84,17 @@ class DownloadRepositoryImpl @Inject constructor(
 
         val isWifiOnly = preferencesManager.isWifiOnly.first()
 
+        // Bundled assets and engine-rendered wallpapers are produced on-device and must not wait for a network
+        val isLocalSource = downloadUrl.startsWith("asset:///") || downloadUrl.startsWith("engine://") ||
+            downloadUrl.startsWith("ml_") || downloadUrl.startsWith("file://") || downloadUrl.startsWith("/")
         val constraints = Constraints.Builder()
-            .setRequiredNetworkType(if (isWifiOnly) NetworkType.UNMETERED else NetworkType.CONNECTED)
+            .setRequiredNetworkType(
+                when {
+                    isLocalSource -> NetworkType.NOT_REQUIRED
+                    isWifiOnly -> NetworkType.UNMETERED
+                    else -> NetworkType.CONNECTED
+                }
+            )
             .build()
 
         val inputData = Data.Builder()

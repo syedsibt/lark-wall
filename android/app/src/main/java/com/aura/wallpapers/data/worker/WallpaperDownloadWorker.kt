@@ -60,7 +60,7 @@ class WallpaperDownloadWorker @AssistedInject constructor(
             }
             if (!targetDir.exists()) targetDir.mkdirs()
 
-            val targetFile = File(targetDir, safeFileName)
+            var targetFile = File(targetDir, safeFileName)
 
             when {
                 downloadUrl.startsWith("asset:///") -> {
@@ -71,23 +71,18 @@ class WallpaperDownloadWorker @AssistedInject constructor(
                         }
                     }
                 }
-                downloadUrl.startsWith("engine://") -> {
-                    // Export interactive wallpaper asset/thumbnail
+                downloadUrl.startsWith("engine://") || downloadUrl.startsWith("ml_") -> {
+                    // Interactive wallpapers are drawn by code: export a full-resolution still frame
+                    // rendered by the same engine (previously this silently saved an unrelated video).
                     val presetId = com.aura.wallpapers.engine.interactive.InteractiveWallpaperConfig.extractPresetId(downloadUrl)
-                    val assetPath = "live_thumbnails/interactive/${presetId}.webp"
-                    val hasAsset = runCatching { context.assets.open(assetPath).close(); true }.getOrDefault(false)
-                    if (hasAsset) {
-                        context.assets.open(assetPath).use { input ->
-                            FileOutputStream(targetFile).use { output ->
-                                input.copyTo(output)
-                            }
+                    targetFile = File(targetDir, safeFileName.substringBeforeLast('.') + ".png")
+                    val still = com.aura.wallpapers.engine.interactive.InteractiveSnapshot.render(presetId, 1440, 2560)
+                    try {
+                        FileOutputStream(targetFile).use { output ->
+                            still.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, output)
                         }
-                    } else {
-                        context.assets.open("live_videos/liquid_chrome_loop.mp4").use { input ->
-                            FileOutputStream(targetFile).use { output ->
-                                input.copyTo(output)
-                            }
-                        }
+                    } finally {
+                        still.recycle()
                     }
                 }
                 downloadUrl.startsWith("file://") -> {

@@ -9,6 +9,8 @@ import coil.ImageLoaderFactory
 import coil.disk.DiskCache
 import coil.memory.MemoryCache
 import coil.util.DebugLogger
+import com.aura.wallpapers.util.InteractiveThumbnailFetcher
+import com.aura.wallpapers.util.InteractiveThumbnailKeyer
 import dagger.hilt.android.HiltAndroidApp
 import okhttp3.OkHttpClient
 import java.io.File
@@ -46,6 +48,9 @@ class AuraApplication : Application(), Configuration.Provider, ImageLoaderFactor
                         data
                     }
                 })
+                // Thumbnails of interactive wallpapers are rendered by the wallpaper engine itself
+                add(InteractiveThumbnailKeyer())
+                add(InteractiveThumbnailFetcher.Factory())
             }
             .allowRgb565(false) // Never degrade to 16-bit compressed colors
             .allowHardware(true) // High-performance GPU hardware bitmap rendering (zero heap GC pauses)
